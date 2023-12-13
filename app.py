@@ -45,27 +45,38 @@ def main():
     response = client_sock.recv(1024)
     print(f"Server says: {response.decode()}")
     user = "1"
-    d = hashlib.sha256(user.encode("utf8")).digest()
     client_priv, client_pub = set_asymetric()	
 	# d = client_pub.verify(user, j)	
     client_sock.send(client_pub.exportKey(format='PEM', passphrase=None, pkcs=1))
     server_pub = RSA.importKey(client_sock.recv(2048), passphrase=None)
     #print(server_pub)
-    message = "Starting..."
+    message = "I'm a cliente"
     client_sock.send(message.encode())
     st = recv_dict(client_sock)
-    print(d)
-    u = server_pub.verify(d, st["sig"])
+    key = base64.b64decode(st["cipher"])
+    iv = base64.b64decode(st["iv"])
+    ud = hashlib.sha256(str(key).encode("utf8")).digest()
+    u = server_pub.verify(ud, st["sig"])
     print(u)
     if u == False:
         print("The conction was compromise. We are disconcting you for your safety\n")
         client_sock.close()
-    key = base64.b64decode(st["cipher"])
-    iv = base64.b64decode(st["iv"])
     cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend)
     ud = hashlib.sha256(str(key).encode("utf8")).digest()
     encryptor = cipher.encryptor()
     decryptor = cipher.decryptor()
+    i_m = st["You are client"]
+    while True:
+        print("what you want to do?\n")
+        comand = input() #Var given via aplication
+        if(int(comand) == 1):
+            st = {"command": "NFC", "door": comand, "I'm": i_m}
+            send_dict(client_sock, st)
+            st = recv_dict(client_sock)
+        
+        
+        
+    
         
     
 
