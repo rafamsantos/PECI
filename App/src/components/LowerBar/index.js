@@ -1,55 +1,71 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
 const LowerBar = () => {
+  const navigation = useNavigation();
+
+  const buttonClickListener = (buttonName) => {
+    if (buttonName === 'Home') {
+      navigation.navigate('Home', { username: '' });
+    } else if (buttonName === 'Logs') {
+      navigation.navigate('Logs');
+    } else if (buttonName === 'Acessos') {
+      navigation.navigate('DoorAccess');
+    }
+  };
+
   return (
-    <View style={styles.bottomBar}>
-      <TouchableOpacity
-        style={styles.button}
-        onPress={buttonClickListener("Home")}
-      >
-        <Text style={styles.buttonText}>Home</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.button}
-        onPress={buttonClickListener("Logs")}
-      >
-        <Text style={styles.buttonText}>Logs</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.button}
-        onPress={buttonClickListener("Acessos")}
-      >
-        <Text style={styles.buttonText}>Acessos</Text>
-      </TouchableOpacity>
+    <View style={styles.absoluteBottomBar}>
+      <View style={styles.bottomBar}>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => buttonClickListener('Home')}
+        >
+          <Text style={styles.buttonText}>Home</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => buttonClickListener('Logs')}
+        >
+          <Text style={styles.buttonText}>Logs</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => buttonClickListener('Acessos')}
+        >
+          <Text style={styles.buttonText}>Acessos</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
 
-const buttonClickListener = (buttonName) => {
-  // Handle button click here
-  console.log('button clicked', buttonName);
-
-};
-
 const styles = StyleSheet.create({
+  absoluteBottomBar: {
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+  },
   bottomBar: {
     flexDirection: 'row',
-    justifyContent: 'space-around', // Center the buttons horizontally
+    justifyContent: 'space-around',
     alignItems: 'center',
     padding: 20,
     backgroundColor: 'lightgray',
   },
   button: {
-    padding: 10, // Increase padding to make buttons larger
-    backgroundColor: '#0BDA51', // Button background color
-    borderRadius: 5, // Add rounded corners
-    width: "30%",
-    textAlign: "center",
+    padding: 10,
+    backgroundColor: '#0BDA51',
+    borderRadius: 5,
+    width: '30%',
+    textAlign: 'center',
   },
   buttonText: {
-    color: 'white', // Text color
-    textAlign: 'center', // Center button text horizontally
+    color: 'white',
+    textAlign: 'center',
     fontSize: 16,
   },
 });
