@@ -112,6 +112,9 @@ def handle_client(client_sock, addr):
 # Convert bytes to hexadecimal string
                 #hex_string = binascii.hexlify(encoded_message).decode()
                 insertdatabase_NFC(str(record), str(request["I'm"]))
+                st = {"NFC code": str(record)}
+                send_dict(client_sock, st)
+                
 
                 
                 

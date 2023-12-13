@@ -73,6 +73,7 @@ def main():
             st = {"command": "NFC", "door": comand, "I'm": i_m}
             send_dict(client_sock, st)
             st = recv_dict(client_sock)
+            NFC_code = st["NFC code"]
         
         
         
