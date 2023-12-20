@@ -40,6 +40,29 @@ def databasecreate_user(db):
     
     return None
 
+
+def databasecreate_log(db):
+    db = sql.connect("mock_database.db")
+    c = db.cursor()
+    c.execute("""CREATE TABLE Logue(ID TEXT, DOOR TEXT)""")
+    db.commit()
+    db.close()
+    
+    return None
+
+def read_log(user):
+    
+    strigue = ""
+    db3 = sql.connect("mock_database.db")
+    c = db3.cursor()
+    a = c.execute("SELECT * FROM Logue when ID LIKE ?", (user))
+    for row in a:
+        stringue = stringue+row+"\n"
+    db3.close()
+    
+    
+    return stringue
+
 def insertdatabase_client(key, iv, client_pub):
     many_users = 1
     db = sql.connect("mock_database.db")
@@ -97,11 +120,19 @@ def handle_client(client_sock, addr):
             insertdatabase_client(key, iv, client_pub)
         while True:
             request = recv_dict(client_sock)
-            if request["command"] == "NFC":
-                data = ''.join(random.choices(string.ascii_letters + string.digits, k=50))
+            the_id_given = request["I'm"]
+            ud = hashlib.sha256(str(the_id_given).encode("utf8")).digest()
+            u = client_pub.verify(ud, request["Sig"])
+            if u != True:
+                st = {"Compromise": "You where compromise\nQuiting..."}
+                send_dict(client_sock, st)
+                client_sock.close() 
+            elif request["command"] == "NFC":
+                data = ''.join(random.choices(string.ascii_letters + string.digits, k=15))
 
 # Create an NDEF Text Record
-                record = ndef.TextRecord(data)
+                data = data.zfill(16)
+                #record = ndef.TextRecord(data)
 
 # Encode the record
                 #message = [record]
@@ -111,9 +142,16 @@ def handle_client(client_sock, addr):
 
 # Convert bytes to hexadecimal string
                 #hex_string = binascii.hexlify(encoded_message).decode()
-                insertdatabase_NFC(str(record), str(request["I'm"]))
-                st = {"NFC code": str(record)}
+                insertdatabase_NFC(str(data), str(request["I'm"]))
+                record = encryptor.update(str(data).encode("utf-8")) + encryptor.finalize()
+                st = {"NFC code": str(base64.b64encode (record), "utf8")}
                 send_dict(client_sock, st)
+            elif request["command"] == "LOG":
+                to_sent = read_log(request["User"])
+                record = encryptor.update(str(to_sent).encode("utf-8")) + encryptor.finalize()
+                st = {"The Logs": str(base64.b64encode (record), "utf8")}
+                send_dict(to_sent)
+                
                 
 
                 
@@ -166,6 +204,19 @@ def main():
             databasecreate_codes(db2)
             print(0)
             db2.close()
+    
+    db3 = sql.connect("mock_database.db")
+    c = db3.cursor()
+    try:
+            a = c.execute("SELECT * FROM Logue")
+            print(9)
+            for row in a:
+                print(row)
+            db3.close()
+    except(sql.Error):
+            databasecreate_log(db3)
+            print(0)
+            db3.close()
 
 # Bind to the port
     server_socket.bind((host, port))

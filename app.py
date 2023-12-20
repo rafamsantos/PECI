@@ -19,6 +19,7 @@ import rsa
 from Crypto.Cipher import AES
 from cryptography.hazmat.primitives import padding
 import hashlib
+import ndef
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 
@@ -70,10 +71,27 @@ def main():
         print("what you want to do?\n")
         comand = input() #Var given via aplication
         if(int(comand) == 1):
-            st = {"command": "NFC", "door": comand, "I'm": i_m}
+            ud = hashlib.sha256(str(i_m).encode("utf8")).digest()
+            st = {"command": "NFC", "door": comand, "I'm": i_m, "Sig": client_priv.sign(ud, 32)}
             send_dict(client_sock, st)
             st = recv_dict(client_sock)
+            st_ex = {"Compromise": "You where compromise\nQuiting..."}
+            if st == st_ex:
+                print("You where compromise\nQuiting...\n")
+                return 0
             NFC_code = st["NFC code"]
+            NFC_code = base64.b64decode(NFC_code)
+            NFC_code = decryptor.update(NFC_code) + decryptor.finalize()
+            NFC_code = ndef.TextRecord(NFC_code)
+        elif(int(comand) == 2):
+            ud = hashlib.sha256(str(i_m).encode("utf8")).digest()
+            st = {"command": "LOG", "ID": user, "I'm": i_m, "Sig": client_priv.sign(ud, 32)}
+            send_dict(client_sock, st)
+            st = recv_dict(client_sock)
+            log = st["The Logs"]
+            log = base64.b64decode(log)
+            log = decryptor.update(log) + decryptor.finalize()
+            print(log)
         
         
         
