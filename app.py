@@ -51,7 +51,7 @@ def main():
     client_sock.send(client_pub.exportKey(format='PEM', passphrase=None, pkcs=1))
     server_pub = RSA.importKey(client_sock.recv(2048), passphrase=None)
     #print(server_pub)
-    message = "I'm a cliente"
+    message = "I'm a client"
     client_sock.send(message.encode())
     st = recv_dict(client_sock)
     key = base64.b64decode(st["cipher"])

@@ -6,9 +6,7 @@ const LowerBar = () => {
   const navigation = useNavigation();
 
   const buttonClickListener = (buttonName) => {
-    if (buttonName === 'Home') {
-      navigation.navigate('Home', { username: '' });
-    } else if (buttonName === 'Logs') {
+    if (buttonName === 'Logs') {
       navigation.navigate('Logs');
     } else if (buttonName === 'Acessos') {
       navigation.navigate('DoorAccess');
@@ -20,13 +18,6 @@ const LowerBar = () => {
       <View style={styles.bottomBar}>
         <TouchableOpacity
           style={styles.button}
-          onPress={() => buttonClickListener('Home')}
-        >
-          <Text style={styles.buttonText}>Home</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.button}
           onPress={() => buttonClickListener('Logs')}
         >
           <Text style={styles.buttonText}>Logs</Text>
@@ -36,7 +27,7 @@ const LowerBar = () => {
           style={styles.button}
           onPress={() => buttonClickListener('Acessos')}
         >
-          <Text style={styles.buttonText}>Acessos</Text>
+          <Text style={styles.buttonText}>Portas</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -53,14 +44,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    padding: 20,
+    padding: 15,
     backgroundColor: 'lightgray',
   },
   button: {
-    padding: 10,
+    padding: 15,
     backgroundColor: '#0BDA51',
     borderRadius: 5,
-    width: '30%',
+    width: '45%',
     textAlign: 'center',
   },
   buttonText: {
