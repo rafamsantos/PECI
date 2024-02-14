@@ -9,11 +9,14 @@ import json
 import sqlite3 as sql
 from Crypto.Util import Counter
 from Crypto.Util.number import bytes_to_long
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives import hashes
 import base64
 from Crypto.PublicKey import RSA
 from common_comm import send_dict, recv_dict, sendrecv_dict
 from cryptography.fernet import Fernet, MultiFernet
-from Crypto.Cipher import PKCS1_OAEP
 import math
 import random
 import rsa
@@ -26,6 +29,10 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 import random
 import string
+from Crypto.Cipher import PKCS1_OAEP
+from Crypto.Hash import SHA256
+import base64
+import json
 
 # Function to handle each client's connection
 backend = default_backend()
@@ -133,7 +140,13 @@ def handle_client(client_sock, addr):
         iv = os.urandom(16)
         cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend)
         ud = hashlib.sha256(str(key).encode("utf8")).digest()
-        st = {"You are client": str(1) , "cipher":  str (base64.b64encode (key), "utf8"), "iv":  str (base64.b64encode (iv), "utf8"), "sig": server_priv.sign(ud, 32)}
+        cipherR = PKCS1_OAEP.new(client_pub)
+        cipher_rsa = cipherR.encrypt(key)
+
+# Encode the encrypted key as base64
+        client_sock.send(base64.b64encode(cipher_rsa) )
+        print(type(cipher_rsa))
+        st = {"You are client": str(1) ,  "iv":  str (base64.b64encode (iv), "utf8"), "sig": server_priv.sign(ud, 32)}
         send_dict(client_sock, st)
         encryptor = cipher.encryptor()
         decryptor = cipher.decryptor()

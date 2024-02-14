@@ -3,6 +3,7 @@ from cmath import sqrt
 import os
 import sys
 import ast
+from cryptography.hazmat.primitives import serialization
 import socket
 import json
 import sqlite3 as sql
@@ -51,13 +52,16 @@ def main():
     client_sock.send(client_pub.exportKey(format='PEM', passphrase=None, pkcs=1))
     server_pub = RSA.importKey(client_sock.recv(2048), passphrase=None)
     #print(server_pub)
-    message = "I'm a client"
+    message = "I'm a cliente"
     client_sock.send(message.encode())
+    key = client_sock.recv(1024)
     st = recv_dict(client_sock)
-    key = base64.b64decode(st["cipher"])
-    iv = base64.b64decode(st["iv"])
+    key = base64.b64decode(key)
+    cipherR = PKCS1_OAEP.new(client_priv)
+    key = cipherR.decrypt(key)
     ud = hashlib.sha256(str(key).encode("utf8")).digest()
     u = server_pub.verify(ud, st["sig"])
+    iv = base64.b64decode(st["iv"])
     print(u)
     if u == False:
         print("The conction was compromise. We are disconcting you for your safety\n")
