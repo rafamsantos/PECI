@@ -9,21 +9,15 @@ import socket
 from cmath import sqrt
 import os
 import sys
-import ast
 import socket
 import json
-import sqlite3 as sql
-from Crypto.Util import Counter
-from Crypto.Util.number import bytes_to_long
-import base64
-from Crypto.PublicKey import RSA
+from ucryptolib import AES
 from common_comm import send_dict, recv_dict, sendrecv_dict
 from cryptography.fernet import Fernet, MultiFernet
-from Crypto.Cipher import PKCS1_OAEP
+from ucryptolib import PKCS1_OAEP
 import math
 import random
 import rsa
-from Crypto.Cipher import AES
 from cryptography.hazmat.primitives import padding
 import hashlib
 import ndef
@@ -31,6 +25,40 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 
 backend = default_backend()
+
+def base64_encode(data):
+    b64chars = b'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+    encoded = bytearray()
+    remainder = len(data) % 3
+
+    # Pad the data to make its length a multiple of 3
+    if remainder:
+        data += b'\x00' * (3 - remainder)
+
+    for i in range(0, len(data), 3):
+        chunk = (data[i] << 16) | (data[i + 1] << 8) | data[i + 2]
+        encoded.extend([b64chars[(chunk >> 18) & 63], b64chars[(chunk >> 12) & 63], b64chars[(chunk >> 6) & 63], b64chars[chunk & 63]])
+
+    # Replace padding bytes
+    if remainder:
+        encoded[-remainder:] = b'=' * remainder
+
+    return encoded
+
+def base64_decode(encoded):
+    b64chars = b'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+    decoded = bytearray()
+
+    for i in range(0, len(encoded), 4):
+        chunk = (b64chars.index(encoded[i]) << 18) | (b64chars.index(encoded[i + 1]) << 12) | (b64chars.index(encoded[i + 2]) << 6) | b64chars.index(encoded[i + 3])
+        decoded.extend([(chunk >> 16) & 255, (chunk >> 8) & 255, chunk & 255])
+
+    # Remove padding bytes
+    while decoded[-1] == 0:
+        decoded.pop()
+
+    return decoded
+
 
 def set_asymetric(): 
 	priv = RSA.generate(2048)
