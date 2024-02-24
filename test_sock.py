@@ -43,12 +43,12 @@ wifi.connect(WIFI_SSID, WIFI_PASSWORD)
 
 # Wait until connected to WiFi
 while not wifi.isconnected():
-    wifi.connect(WIFI_SSID, WIFI_PASSWORD)
     tft.init()  # initialize display
     tft.fill(0)  # clear display
     tft.text(font, "Not Connected!!!", 70, 100, st7789.CYAN)  # print on tft screen
     time.sleep(1)  # wait for 1 second
     bequiet()
+    wifi.connect(WIFI_SSID, WIFI_PASSWORD)
 
 # Create a TCP/IP socket
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
