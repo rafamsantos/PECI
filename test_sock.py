@@ -39,6 +39,7 @@ bequiet()
 wifi = network.WLAN(network.STA_IF)
 wifi.active(True)
 bequiet()
+wifi.connect(WIFI_SSID, WIFI_PASSWORD)
 
 # Wait until connected to WiFi
 while not wifi.isconnected():
