@@ -18,7 +18,7 @@ print("Server listening on port", PORT)
 client_socket, client_address = server_socket.accept()
 print("Connected to:", client_address)
 
-try:
+while True:
     while True:
         # Receive data from the client
         data = client_socket.recv(1024)
@@ -26,9 +26,5 @@ try:
             break  # No more data received, end the connection
         print("Received:", data.decode())
 
-finally:
-    # Clean up the connection
-    client_socket.close()
-    server_socket.close()
 
 

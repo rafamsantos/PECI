@@ -62,15 +62,11 @@ while True:
     tft.text(font, "Send!", 70, 100, st7789.CYAN)  # print on tft screen
     time.sleep(1)  # wait for 1 second
 
-    try:
     # Send data to the server
-        message = "Hello, server!"
-        #client_socket.sendall(message.encode())
-        #print("Sent:", message)
+    message = "Hello, server!"
+    client_socket.sendall(message.encode())
+    print("Sent:", message)
 
-    finally:
-    # Clean up the connection
-        client_socket.close()
 
 
 
