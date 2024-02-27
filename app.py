@@ -34,16 +34,19 @@ def set_asymetric():
 
 def main():
 # Create a socket object
+    SERVER_HOST = '192.168.71.147'  # IP address of the server
+    SERVER_PORT = 12345                 # Port the server is listening on
+    
     client_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-# Get the server's hostname and port
-    server_host = socket.gethostname()
-    server_port = 9999
+# Connect the socket to the server's address and port
+    client_sock.connect((SERVER_HOST, SERVER_PORT))
 
 # Connect to the server
-    client_sock.connect((server_host, server_port))
-
 # Receive data from the server
+    message = "Im client"
+    client_sock.send(message.encode())
+    
     response = client_sock.recv(1024)
     print(f"Server says: {response.decode()}")
     user = "1"
@@ -105,6 +108,13 @@ def main():
 
 if __name__ == "__main__":
     main()
+        
+        
+        
+    
+        
+    
 
-# Close the connection
-#client_socket.close()
+if __name__ == "__main__":
+    main()
+

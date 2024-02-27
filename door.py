@@ -1,116 +1,85 @@
+import socket
+import network  # Import the network module
 import machine
 from machine import Pin, SPI, PWM, I2C
 from nfc import NFC
 import utime, time
 import st7789
+import socket
 import vga1_bold_16x32 as font
 import os
-import socket
-from cmath import sqrt
-import os
-import sys
-import socket
-import json
-from ucryptolib import AES
-from common_comm import send_dict, recv_dict, sendrecv_dict
-from cryptography.fernet import Fernet, MultiFernet
-from ucryptolib import PKCS1_OAEP
-import math
-import random
-import rsa
-from cryptography.hazmat.primitives import padding
-import hashlib
-import ndef
-from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from cryptography.hazmat.backends import default_backend
+buzzer = PWM(Pin(15))  # buzzer pin connected to GPIO15
 
-backend = default_backend()
+def bequiet():
+    buzzer.duty_u16(0)
 
-def base64_encode(data):
-    b64chars = b'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
-    encoded = bytearray()
-    remainder = len(data) % 3
+data = '1B233A49'  # must be 4 byte, for write
+baudrate = 9600  # communication buadrate between pico W and NFC module
+page_no = '15'  # memory location divided into pages NTAG213/215/216 -> 4bytes per page
+nfc = NFC(baudrate)  # create object
 
-    # Pad the data to make its length a multiple of 3
-    if remainder:
-        data += b'\x00' * (3 - remainder)
+# define and configure SPI for Display
+spi = SPI(1, baudrate=40000000, sck=Pin(10), mosi=Pin(11))
+tft = st7789.ST7789(spi, 240, 240, reset=Pin(12, Pin.OUT), cs=Pin(9, Pin.OUT), dc=Pin(8, Pin.OUT),
+                      backlight=Pin(13, Pin.OUT), rotation=1)  # SPI interface for tft screen
 
-    for i in range(0, len(data), 3):
-        chunk = (data[i] << 16) | (data[i + 1] << 8) | data[i + 2]
-        encoded.extend([b64chars[(chunk >> 18) & 63], b64chars[(chunk >> 12) & 63], b64chars[(chunk >> 6) & 63], b64chars[chunk & 63]])
+bequiet()
 
-    # Replace padding bytes
-    if remainder:
-        encoded[-remainder:] = b'=' * remainder
+# WiFi module configuration
+WIFI_SSID = 'Gal'
+WIFI_PASSWORD = 'Jmml1234.'
+bequiet()
 
-    return encoded
+# Server configuration
+SERVER_HOST = '192.168.71.147'  # IP address of the server
+SERVER_PORT = 12345                 # Port the server is listening on
+bequiet()
 
-def base64_decode(encoded):
-    b64chars = b'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
-    decoded = bytearray()
+# Connect to WiFi
+wifi = network.WLAN(network.STA_IF)
+wifi.active(True)
+bequiet()
+wifi.connect(WIFI_SSID, WIFI_PASSWORD)
 
-    for i in range(0, len(encoded), 4):
-        chunk = (b64chars.index(encoded[i]) << 18) | (b64chars.index(encoded[i + 1]) << 12) | (b64chars.index(encoded[i + 2]) << 6) | b64chars.index(encoded[i + 3])
-        decoded.extend([(chunk >> 16) & 255, (chunk >> 8) & 255, chunk & 255])
+# Wait until connected to WiFi
+while not wifi.isconnected():
+    tft.init()  # initialize display
+    tft.fill(0)  # clear display
+    tft.text(font, "Not Connected!!!", 70, 100, st7789.CYAN)  # print on tft screen
+    time.sleep(1)  # wait for 1 second
+    bequiet()
+    wifi.connect(WIFI_SSID, WIFI_PASSWORD)
 
-    # Remove padding bytes
-    while decoded[-1] == 0:
-        decoded.pop()
+# Create a TCP/IP socket
+client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-    return decoded
+# Connect the socket to the server's address and port
+client_socket.connect((SERVER_HOST, SERVER_PORT))
+print("Connected to server")
+bequiet()
+message = "Im door"
+client_socket.send(message.encode())
+response = client_socket.recv(1024)
+print("Server response:", response.decode())
+
+message = "1"
+client_socket.send(message.encode())
+response = client_socket.recv(1024)
+print("Server response:", response.decode())
 
 
-def set_asymetric(): 
-	priv = RSA.generate(2048)
-	pub = priv.publickey()
+# Send the second message
+while True:
+    bequiet()
+    tft.init()  # initialize display
+    tft.fill(0)  # clear display
+    tft.text(font, "Send!", 70, 100, st7789.CYAN)  # print on tft screen
+    time.sleep(1)  # wait for 1 second
 
-	return priv, pub
-
-def main():
-# Create a socket object
-    client_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-# Get the server's hostname and port
-    server_host = socket.gethostname()
-    server_port = 9999
-
-# Connect to the server
-    client_sock.connect((server_host, server_port))
-
-# Receive data from the server
-    response = client_sock.recv(1024)
-    print(f"Server says: {response.decode()}")
-    user = "1"
-    client_priv, client_pub = set_asymetric()	
-	# d = client_pub.verify(user, j)	
-    client_sock.send(client_pub.exportKey(format='PEM', passphrase=None, pkcs=1))
-    server_pub = RSA.importKey(client_sock.recv(2048), passphrase=None)
-    #print(server_pub)
-    message = "I'm a door"
-    client_sock.send(message.encode())
-    st = recv_dict(client_sock)
-    key = base64.b64decode(st["cipher"])
-    iv = base64.b64decode(st["iv"])
-    ud = hashlib.sha256(str(key).encode("utf8")).digest()
-    u = server_pub.verify(ud, st["sig"])
-    print(u)
-    if u == False:
-        print("The conction was compromise. We are disconcting you for your safety\n")
-        client_sock.close()
-    cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend)
-    ud = hashlib.sha256(str(key).encode("utf8")).digest()
-    encryptor = cipher.encryptor()
-    decryptor = cipher.decryptor()
-    i_m = st["You are client"]
-    while True:
-        print("wating...\n")
-        
-        
-        
-        
-    
-        
+    # Send data to the server
+    message = "Hello, server!"
+    client_socket.sendall(message.encode())
+    response = client_socket.recv(1024)
+    print("Server response:", response.decode())
     
 
-if __name__ == "__main__":
-    main()
