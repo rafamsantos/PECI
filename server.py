@@ -91,6 +91,7 @@ def insertdatabase_client(key, iv, client_pub):
     db.close()
 
 
+
 def insertdatabase_door(id, sock):
     many_doors = 1
     db = sql.connect("mock_database.db")
@@ -118,6 +119,17 @@ def insertdatabase_NFC(NFC, user):
     db.commit()
     
     db.close()
+def check_nfc(nfc_code, door_n):
+        should_open = False
+        db = sql.connect("mock_database.db")
+        c = db.cursor()
+        a = c.execute("SELECT PERMISSIONS * userdoor_codes")
+        for row in a:
+            if nfc_code == row[1]:
+                if door_n == row[2]:
+                    should_open = True
+        db.close()
+        return should_open
 
 def handle_client(client_sock, addr):
     try:
@@ -190,14 +202,23 @@ def handle_client(client_sock, addr):
         else:
             message = "Whitch door?"
             client_sock.send(message.encode())
-            num = client_sock.recv(1024)
+            num_do = client_sock.recv(1024)
             insertdatabase_door(num, client_sock)
             message = "You are set"
             client_sock.send(message.encode())
-            client_sock.recv(1024)
             while True:
-                message = "Hello door"
-                client_sock.send(message.encode())
+                data = client_sock.recv(1024)
+                if data.decode() == "Hello, server!":
+                    message = "Hello door"
+                    client_sock.send(message.encode())
+                else:
+                    true = check_nfc(data.decode(), num_do)
+                    if true == False:
+                        message = "Denied entry"
+                        client_sock.send(message.encode())
+                    else:
+                        message = "You can open"
+                        client_sock.send(message.encode())
             
  
 
@@ -221,7 +242,7 @@ def set_asymetric():
 
 # Create a socket object
 def main():
-    HOST = '192.168.71.147'  # Listen on all network interfaces
+    HOST = '192.168.74.147'  # Listen on all network interfaces
     PORT = 12345      # Port to listen on
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 

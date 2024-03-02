@@ -31,7 +31,7 @@ WIFI_PASSWORD = 'Jmml1234.'
 bequiet()
 
 # Server configuration
-SERVER_HOST = '192.168.71.147'  # IP address of the server
+SERVER_HOST = '192.168.74.147'  # IP address of the server
 SERVER_PORT = 12345                 # Port the server is listening on
 bequiet()
 
@@ -75,11 +75,36 @@ while True:
     tft.fill(0)  # clear display
     tft.text(font, "Send!", 70, 100, st7789.CYAN)  # print on tft screen
     time.sleep(1)  # wait for 1 second
+    
+    status = nfc.Data_write(data, page_no)  # Write data to Tag
 
-    # Send data to the server
-    message = "Hello, server!"
-    client_socket.sendall(message.encode())
-    response = client_socket.recv(1024)
-    print("Server response:", response.decode())
+    if status == "Card write sucessfully":
+        tft.fill(0)
+        dataRec = nfc.data_read(page_no)  # Read Tag data written initially
+
+        try:
+            with open('nfc_data.txt', 'a') as f:
+                f.write(str(dataRec) + '\n')
+                print("Write successful")
+        except Exception as e:
+            print("Error writing to file:", e)
+
+        print("Received data = ", dataRec)
+        tft.text(font, str(dataRec), 50, 120, st7789.WHITE)  # print on tft screen
+        client_socket.sendall(str(dataRec).encode())
+        response = client_socket.recv(1024)
+        if "You can open" == response.decode():
+            tft.text(font, "Open", 50, 120, st7789.WHITE)  # print on tft screen
+            print("OPEN!!!")
+        else:
+            tft.text(font, "Permission denied or Error!", 50, 120, st7789.WHITE)  # print on tft screen
+            print("DENEID")
+        bequiet()
+    else:
+        # Send data to the server
+        message = "Hello, server!"
+        client_socket.sendall(message.encode())
+        response = client_socket.recv(1024)
+        print("Server response:", response.decode())
     
 
