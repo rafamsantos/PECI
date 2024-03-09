@@ -30,6 +30,7 @@ from cryptography.hazmat.backends import default_backend
 import random
 import string
 from Crypto.Cipher import PKCS1_OAEP
+from Crypto.Signature import PKCS1_v1_5
 from Crypto.Hash import SHA256
 import base64
 import json
@@ -91,7 +92,6 @@ def insertdatabase_client(key, iv, client_pub):
     db.close()
 
 
-
 def insertdatabase_door(id, sock):
     many_doors = 1
     db = sql.connect("mock_database.db")
@@ -119,17 +119,6 @@ def insertdatabase_NFC(NFC, user):
     db.commit()
     
     db.close()
-def check_nfc(nfc_code, door_n):
-        should_open = False
-        db = sql.connect("mock_database.db")
-        c = db.cursor()
-        a = c.execute("SELECT PERMISSIONS * userdoor_codes")
-        for row in a:
-            if nfc_code == row[1]:
-                if door_n == row[2]:
-                    should_open = True
-        db.close()
-        return should_open
 
 def handle_client(client_sock, addr):
     try:
@@ -153,14 +142,16 @@ def handle_client(client_sock, addr):
             key = os.urandom(32)
             iv = os.urandom(16)
             cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend)
-            ud = hashlib.sha256(str(key).encode("utf8")).digest()
+            ud = SHA256.new(bytearray(key))
             cipherR = PKCS1_OAEP.new(client_pub)
             cipher_rsa = cipherR.encrypt(key)
 
 # Encode the encrypted key as base64
             client_sock.send(base64.b64encode(cipher_rsa) )
             print(type(cipher_rsa))
-            st = {"You are client": str(1) ,  "iv":  str (base64.b64encode (iv), "utf8"), "sig": server_priv.sign(ud, 32)}
+            signaturaRSA = PKCS1_v1_5.new(server_priv)
+            st = {"You are client": str(1) ,  "iv":  str (base64.b64encode (iv), "utf8"), "sig": str(base64.b64encode(signaturaRSA.sign(ud)), "utf8")}
+            #verificar manual crypto sobre signature
             send_dict(client_sock, st)
             encryptor = cipher.encryptor()
             decryptor = cipher.decryptor()
@@ -169,7 +160,7 @@ def handle_client(client_sock, addr):
                 while True:
                     request = recv_dict(client_sock)
                     the_id_given = request["I'm"]
-                    ud = hashlib.sha256(str(the_id_given).encode("utf8")).digest()
+                    ud = hashlib.sha256(str(the_id_given).encode("utf8"))
                     u = client_pub.verify(ud, request["Sig"])
                     if u != True:
                         st = {"Compromise": "You where compromise\nQuiting..."}
@@ -202,23 +193,14 @@ def handle_client(client_sock, addr):
         else:
             message = "Whitch door?"
             client_sock.send(message.encode())
-            num_do = client_sock.recv(1024)
+            num = client_sock.recv(1024)
             insertdatabase_door(num, client_sock)
             message = "You are set"
             client_sock.send(message.encode())
+            client_sock.recv(1024)
             while True:
-                data = client_sock.recv(1024)
-                if data.decode() == "Hello, server!":
-                    message = "Hello door"
-                    client_sock.send(message.encode())
-                else:
-                    true = check_nfc(data.decode(), num_do)
-                    if true == False:
-                        message = "Denied entry"
-                        client_sock.send(message.encode())
-                    else:
-                        message = "You can open"
-                        client_sock.send(message.encode())
+                message = "Hello door"
+                client_sock.send(message.encode())
             
  
 
@@ -242,7 +224,8 @@ def set_asymetric():
 
 # Create a socket object
 def main():
-    HOST = '192.168.74.147'  # Listen on all network interfaces
+    HOST = '192.168.235.147'  # Listen on all network interfaces Casa:192.168.1.74
+                                                                #OG:192.168.74.172
     PORT = 12345      # Port to listen on
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 

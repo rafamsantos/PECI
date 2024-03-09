@@ -1,28 +1,39 @@
 import socket
+import threading
 from cmath import sqrt
 import os
 import sys
 import ast
-from cryptography.hazmat.primitives import serialization
 import socket
 import json
 import sqlite3 as sql
 from Crypto.Util import Counter
 from Crypto.Util.number import bytes_to_long
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives import hashes
 import base64
 from Crypto.PublicKey import RSA
 from common_comm import send_dict, recv_dict, sendrecv_dict
 from cryptography.fernet import Fernet, MultiFernet
-from Crypto.Cipher import PKCS1_OAEP
 import math
 import random
 import rsa
+import ndef
+import binascii
 from Crypto.Cipher import AES
 from cryptography.hazmat.primitives import padding
 import hashlib
-import ndef
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
+import random
+import string
+from Crypto.Cipher import PKCS1_OAEP
+from Crypto.Signature import PKCS1_v1_5
+from Crypto.Hash import SHA256
+import base64
+import json
 
 backend = default_backend()
 
@@ -34,7 +45,7 @@ def set_asymetric():
 
 def main():
 # Create a socket object
-    SERVER_HOST = '192.168.185.147'  # IP address of the server
+    SERVER_HOST = '192.168.235.147'  # IP address of the server
     SERVER_PORT = 12345                 # Port the server is listening on
     
     client_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -62,15 +73,16 @@ def main():
     key = base64.b64decode(key)
     cipherR = PKCS1_OAEP.new(client_priv)
     key = cipherR.decrypt(key)
-    ud = hashlib.sha256(str(key).encode("utf8")).digest()
-    u = server_pub.verify(ud, st["sig"])
+    ud = SHA256.new(bytearray(key))
+    u = PKCS1_v1_5.new(server_pub).verify(ud, base64.b64decode(st["sig"]))
+    #u = signaturaRSA.verify(ud, st["sig"])
     iv = base64.b64decode(st["iv"])
     print(u)
     if u == False:
         print("The conction was compromise. We are disconcting you for your safety\n")
         client_sock.close()
     cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend)
-    ud = hashlib.sha256(str(key).encode("utf8")).digest()
+    ud = SHA256.new(bytearray(key))
     encryptor = cipher.encryptor()
     decryptor = cipher.decryptor()
     i_m = st["You are client"]
