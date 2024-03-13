@@ -43,11 +43,27 @@ many_doors = 0
 def databasecreate_user(db):
     db = sql.connect("mock_database.db")
     c = db.cursor()
-    c.execute("""CREATE TABLE userdata(ID TEXT, PUBLIC_KEY TEXT, SYMETRIC_KEY TEXT, IV TEXT)""")
+    c.execute("""CREATE TABLE userdata(ID TEXT, PERMISSIONS TEXT)""")
     db.commit()
     db.close()
     
     return None
+
+def permission(user):
+    per = "normal"
+    db3 = sql.connect("mock_database.db")
+    c = db3.cursor()
+    a = c.execute("SELECT * FROM userdata")
+    for row in a:
+        if row[0] == user:
+            per = row[1]
+            break
+    db3.close()
+    
+    
+    
+    
+    return per
 
 
 def databasecreate_door(db):
@@ -124,6 +140,15 @@ def handle_client(client_sock, addr):
     try:
         data = client_sock.recv(1024)
         if data.decode() == "Im client":
+            
+            message = "Send Name"
+            client_sock.send(message.encode())
+            print(f"Got connection from {addr}")
+            
+            client_name = client_sock.recv(1024).decode() #Turnar compativel com a autenticação
+            
+            permission = permission(client_name)
+            
             print(f"Got connection from {addr}")
 
         # Send data to the client
@@ -150,7 +175,7 @@ def handle_client(client_sock, addr):
             client_sock.send(base64.b64encode(cipher_rsa) )
             print(type(cipher_rsa))
             signaturaRSA = PKCS1_v1_5.new(server_priv)
-            st = {"You are client": str(1) ,  "iv":  str (base64.b64encode (iv), "utf8"), "sig": str(base64.b64encode(signaturaRSA.sign(ud)), "utf8")}
+            st = {"You are client": str(1) ,  "iv":  str (base64.b64encode (iv), "utf8"), "sig": str(base64.b64encode(signaturaRSA.sign(ud)), "utf8"), "Your permisions": str(permission)}
             #verificar manual crypto sobre signature
             send_dict(client_sock, st)
             encryptor = cipher.encryptor()
@@ -190,6 +215,9 @@ def handle_client(client_sock, addr):
                             record = encryptor.update(str(to_sent).encode("utf-8")) + encryptor.finalize()
                             st = {"The Logs": str(base64.b64encode (record), "utf8")}
                             send_dict(to_sent)
+                    
+                    elif request["command"] == "Ademistrator_open":
+                            pass
         else:
             message = "Whitch door?"
             client_sock.send(message.encode())

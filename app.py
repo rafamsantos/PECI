@@ -59,6 +59,11 @@ def main():
     client_sock.send(message.encode())
     
     response = client_sock.recv(1024)
+    
+    message = "rmlameiras@ua.pt"
+    client_sock.send(message.encode())
+    
+    response = client_sock.recv(1024)
     print(f"Server says: {response.decode()}")
     user = "1"
     client_priv, client_pub = set_asymetric()	
@@ -81,6 +86,9 @@ def main():
     if u == False:
         print("The conction was compromise. We are disconcting you for your safety\n")
         client_sock.close()
+    
+    my_permissions = st["Your permisions"] #Var with the permissions
+    print(my_permissions)
     cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend)
     ud = SHA256.new(bytearray(key))
     encryptor = cipher.encryptor()
@@ -111,6 +119,11 @@ def main():
             log = base64.b64decode(log)
             log = decryptor.update(log) + decryptor.finalize()
             print(log)
+        
+        elif(int(comand) == 3): #addmistrator open door
+            ud = hashlib.sha256(str(i_m).encode("utf8")).digest()
+            st = {"command": "Ademistrator_open", "door": comand, "I'm": i_m, "Sig": client_priv.sign(ud, 32)}
+            send_dict(client_sock, st)
         
         
         
