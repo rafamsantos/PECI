@@ -45,7 +45,7 @@ def set_asymetric():
 
 def main():
 # Create a socket object
-    SERVER_HOST = '192.168.235.147'  # IP address of the server
+    SERVER_HOST = '192.168.118.147'  # IP address of the server
     SERVER_PORT = 12345                 # Port the server is listening on
     
     client_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

@@ -147,7 +147,8 @@ def handle_client(client_sock, addr):
             
             client_name = client_sock.recv(1024).decode() #Turnar compativel com a autenticação
             
-            permission = permission(client_name)
+            
+            permi = permission(client_name)
             
             print(f"Got connection from {addr}")
 
@@ -175,7 +176,7 @@ def handle_client(client_sock, addr):
             client_sock.send(base64.b64encode(cipher_rsa) )
             print(type(cipher_rsa))
             signaturaRSA = PKCS1_v1_5.new(server_priv)
-            st = {"You are client": str(1) ,  "iv":  str (base64.b64encode (iv), "utf8"), "sig": str(base64.b64encode(signaturaRSA.sign(ud)), "utf8"), "Your permisions": str(permission)}
+            st = {"You are client": str(1) ,  "iv":  str (base64.b64encode (iv), "utf8"), "sig": str(base64.b64encode(signaturaRSA.sign(ud)), "utf8"), "Your permisions": str(permi)}
             #verificar manual crypto sobre signature
             send_dict(client_sock, st)
             encryptor = cipher.encryptor()
@@ -252,7 +253,7 @@ def set_asymetric():
 
 # Create a socket object
 def main():
-    HOST = '192.168.235.147'  # Listen on all network interfaces Casa:192.168.1.74
+    HOST = '192.168.118.147'  # Listen on all network interfaces Casa:192.168.1.74
                                                                 #OG:192.168.74.172
     PORT = 12345      # Port to listen on
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
