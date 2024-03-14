@@ -92,8 +92,10 @@ def open_door(client_name, door):
     a = c.execute("SELECT * FROM doordata")
     for row in a:
         if row[3] == client_name:
-            c.execute("UPDATE doordata SET Should_Open = ? WHERE ID = ?", ("Yes", door))
+            c.execute("UPDATE doordata SET Should_Open = ? WHERE ID = ?", ("Yes", str(door)))
             break
+        
+    db3.commit()
     db3.close() 
     
 
@@ -103,12 +105,16 @@ def check_if_remote_open(door):
     c = db3.cursor()
     a = c.execute("SELECT * FROM doordata")
     for row in a:
-        if row[1] == door:
+        print(row)
+        if row[0] == str(door):
             if row[2] == "Yes":
-                c.execute("UPDATE doordata SET Should_Open = ? WHERE ID = ?", ("No", door))
+                print("here!!!")
+                c.execute("UPDATE doordata SET Should_Open = ? WHERE ID = ?", ("No", row[0]))
                 shoudl = 1
                 break
-    db3.close() 
+    
+    
+    db3.commit()
     
     return shoudl
 
@@ -244,13 +250,13 @@ def handle_client(client_sock, addr):
             message = "Whitch door?"
             client_sock.send(message.encode())
             num = client_sock.recv(1024)
-            insertdatabase_door(num, client_sock)
+            insertdatabase_door(num.decode(), client_sock)
             message = "You are set"
             client_sock.send(message.encode())
-            client_sock.recv(1024)
             while True:
+                client_sock.recv(1024)
                 message = "Hello door"
-                should = check_if_remote_open(num)
+                should = check_if_remote_open(num.decode())
                 if should == 1:
                     message = "Door, remote open"
                     client_sock.send(message.encode())

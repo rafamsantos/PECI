@@ -105,6 +105,11 @@ while True:
         message = "Hello, server!"
         client_socket.sendall(message.encode())
         response = client_socket.recv(1024)
-        print("Server response:", response.decode())
+        if response.decode() == "Door, remote open":
+            tft.text(font, "Open", 50, 120, st7789.WHITE)  # print on tft screen
+            print("OPEN!!!")
+            
+        else:
+            print("Server response:", response.decode())
     
 
