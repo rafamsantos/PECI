@@ -59,7 +59,7 @@ def main():
     client_sock.send(message.encode())
     
     response = client_sock.recv(1024)
-    
+    name = "rmlameiras@ua.pt"
     message = "rmlameiras@ua.pt"
     client_sock.send(message.encode())
     
@@ -98,21 +98,19 @@ def main():
         print("what you want to do?\n")
         comand = input() #Var given via aplication
         if(int(comand) == 1):
-            ud = hashlib.sha256(str(i_m).encode("utf8")).digest()
-            st = {"command": "NFC", "door": comand, "I'm": i_m, "Sig": client_priv.sign(ud, 32)}
+            ud = SHA256.new(bytearray(name.encode()))
+            signaturaRSA = PKCS1_v1_5.new(client_priv)
+            st = {"command": "NFC", "door": comand, "I'm": name, "Sig": str(base64.b64encode(signaturaRSA.sign(ud)), "utf8")}
             send_dict(client_sock, st)
-            st = recv_dict(client_sock)
-            st_ex = {"Compromise": "You where compromise\nQuiting..."}
-            if st == st_ex:
-                print("You where compromise\nQuiting...\n")
-                return 0
-            NFC_code = st["NFC code"]
-            NFC_code = base64.b64decode(NFC_code)
-            NFC_code = decryptor.update(NFC_code) + decryptor.finalize()
-            NFC_code = ndef.TextRecord(NFC_code)
+            
+            NFC_code = recv_dict(client_sock)
+            print(NFC_code)
+            NFC_code = decryptor.update(base64.b64decode(NFC_code["NFC code"])) + decryptor.finalize()
+            record = ndef.TextRecord(NFC_code)
         elif(int(comand) == 2):
-            ud = hashlib.sha256(str(i_m).encode("utf8")).digest()
-            st = {"command": "LOG", "ID": user, "I'm": i_m, "Sig": client_priv.sign(ud, 32)}
+            ud = SHA256.new(bytearray(name.encode()))
+            signaturaRSA = PKCS1_v1_5.new(client_priv)
+            st = {"command": "Ademistrator_open", "door": comand, "I'm": name, "Sig": str(base64.b64encode(signaturaRSA.sign(ud)), "utf8")}
             send_dict(client_sock, st)
             st = recv_dict(client_sock)
             log = st["The Logs"]
@@ -121,8 +119,9 @@ def main():
             print(log)
         
         elif(int(comand) == 3): #addmistrator open door
-            ud = hashlib.sha256(str(i_m).encode("utf8")).digest()
-            st = {"command": "Ademistrator_open", "door": comand, "I'm": i_m, "Sig": client_priv.sign(ud, 32)}
+            ud = SHA256.new(bytearray(name.encode()))
+            signaturaRSA = PKCS1_v1_5.new(client_priv)
+            st = {"command": "Ademistrator_open", "door": comand, "I'm": name, "Sig": str(base64.b64encode(signaturaRSA.sign(ud)), "utf8")}
             send_dict(client_sock, st)
         
         

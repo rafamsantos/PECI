@@ -31,7 +31,7 @@ WIFI_PASSWORD = 'Jmml1234.'
 bequiet()
 
 # Server configuration
-SERVER_HOST = '192.168.74.147'  # IP address of the server
+SERVER_HOST = '192.168.118.147'  # IP address of the server
 SERVER_PORT = 12345                 # Port the server is listening on
 bequiet()
 
