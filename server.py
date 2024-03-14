@@ -226,7 +226,7 @@ def handle_client(client_sock, addr):
 
 # Convert bytes to hexadecimal string
                 #hex_string = binascii.hexlify(encoded_message).decode()
-                        #insertdatabase_NFC(str(data), str(request["I'm"]))
+                        insertdatabase_NFC(str(data), str(request["I'm"]))
                         record = encryptor.update(str(data).encode("utf-8")) + encryptor.finalize()
                         st = {"NFC code": str( base64.b64encode (record), "utf-8")}
                         send_dict(client_sock, st)
@@ -238,7 +238,7 @@ def handle_client(client_sock, addr):
                     
                     elif request["command"] == "Ademistrator_open":
                         #open_door(client_name)
-                        open_door(permi)
+                        open_door(permi, request["door"])
 
         else:
             message = "Whitch door?"

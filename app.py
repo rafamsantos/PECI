@@ -121,7 +121,9 @@ def main():
         elif(int(comand) == 3): #addmistrator open door
             ud = SHA256.new(bytearray(name.encode()))
             signaturaRSA = PKCS1_v1_5.new(client_priv)
-            st = {"command": "Ademistrator_open", "door": comand, "I'm": name, "Sig": str(base64.b64encode(signaturaRSA.sign(ud)), "utf8")}
+            print("which door?\n")
+            do = input() #Var given via aplication about door to opne Note: Only door is 4
+            st = {"command": "Ademistrator_open", "door": comand, "I'm": name, "Sig": str(base64.b64encode(signaturaRSA.sign(ud)), "utf8"), "door": do}
             send_dict(client_sock, st)
         
         
