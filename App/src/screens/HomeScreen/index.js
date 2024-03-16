@@ -19,12 +19,30 @@ const Home = () => {
   };
 
   async function readNdef() {
+    console.log("button pressed")
+
     try {
+      fetch('http://192.168.56.1:3000/door', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+       console.log('Success:', data);
+      })
+      .catch(error => {
+      console.error('Error:', error);
+      });
+
       // register for the NFC tag with NDEF in it
       await NfcManager.requestTechnology(NfcTech.Ndef);
       // the resolved tag object will contain `ndefMessage` property
       const tag = await NfcManager.getTag();
       console.log('Tag found', tag);
+
+     
     } catch (ex) {
       console.warn('Oops!', ex);
     } finally {
