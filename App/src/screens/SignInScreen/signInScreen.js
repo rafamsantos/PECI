@@ -1,5 +1,6 @@
 import React, {useState}from 'react'
-import { View, Text , Image, StyleSheet, useWindowDimensions} from 'react-native'
+import { View, Text, Image, StyleSheet, useWindowDimensions} from 'react-native'
+//import AsyncStorage from '@react-native-async-storage/async-storage';
 import Logo from '../../../assets/images/ua.png'
 import CustomInput from '../../components/CustomInput';
 import CustomButton from '../../components/CustomButton';
@@ -10,16 +11,43 @@ import LowerBar from '../../components/LowerBar';
 const SignInScreen = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
 
     const {height} = useWindowDimensions();
     const navigation = useNavigation();
 
-    const onSignInPressed = () => {
+    const onSignInPressed = async () => {
         console.warn('Sign In Pressed');
         console.log('Username before navigation:', username);
-        // should obviously check if credentials are correct
-        navigation.navigate('Home', { username: username });
+        /*
+        try{
+            const response = await fetch('http://192.168.56.1:3000/signin', {
+            method: 'POST',
+            headers: {
+                'Content-type': 'application/json',
+            },
+            body: JSON.stringify({username,password}),
+        });
 
+        if (response.ok){
+            const data = await response.json();
+
+            await AsyncStorage.setItem('authToken', data.token);
+            await AsyncStorage.setItem('userRole',data.role);
+
+            navigation.navigate('Home', { username: username })
+
+        }
+        else {
+            setError('Invalid username or password');
+        }
+
+        }
+        catch(error){
+            console.error('Sign in error:',error);
+            setError('Try again.');
+        }*/
+        navigation.navigate('Home', { username: username })
     };
 
     return (

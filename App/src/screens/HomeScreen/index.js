@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet} from 'react-native';
+//import AsyncStorage from '@react-native-async-storage/async-storage';
 import LowerBar from '../../components/LowerBar';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import UserProfile from '../../components/UserProfile';
@@ -10,6 +11,22 @@ const Home = () => {
   const { params } = route;
   const username = params && params.username ? params.username : '';
   const navigation = useNavigation();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(()=> {
+    checkUserRole();
+  },[])
+
+  const checkUserRole = async () => {
+
+    const userRole = await AsyncStorage.getItem('userRole');
+
+    if (userRole == 'admin'){
+
+      setIsAdmin(true);
+    }
+
+  }
 
   const userProfile = {
     photoURL: 'https://picsum.photos/200',
@@ -18,9 +35,12 @@ const Home = () => {
     personalInfo: 'Engenharia de Computadores e Informática',
   };
 
+  //{isAdmin &&<LowerBar />} <-- substituir no LowerBar para implementar accesso exlusivo para o admin 
+
+
   async function readNdef() {
     console.log("button pressed")
-
+    
     try {
       fetch('http://192.168.56.1:3000/door', {
         method: 'GET',
@@ -35,7 +55,7 @@ const Home = () => {
       .catch(error => {
       console.error('Error:', error);
       });
-
+      
       // register for the NFC tag with NDEF in it
       await NfcManager.requestTechnology(NfcTech.Ndef);
       // the resolved tag object will contain `ndefMessage` property
@@ -87,6 +107,7 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+    color: 'black',
     justifyContent: 'center',
     alignItems: 'center',
   },
