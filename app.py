@@ -34,20 +34,6 @@ from Crypto.Signature import PKCS1_v1_5
 from Crypto.Hash import SHA256
 import base64
 import json
-from flask import Flask, request, jsonify
-
-app = Flask(__name__)
-
-@app.route('/door', methods = ['GET'])
-def door_called():
-   
-    return jsonify({"User":["Hello","My","World"]})
-
-    #response = {'message': 'Data received successfully'}
-    #return jsonify(response)
-    
-
-
 
 backend = default_backend()
 
@@ -147,7 +133,6 @@ def main():
     
 
 if __name__ == "__main__":
-    app.run(host='192.168.56.1',port=12345,debug=True)
-   # main()
+    main()
         
 

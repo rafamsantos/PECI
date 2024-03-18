@@ -105,10 +105,8 @@ def check_if_remote_open(door):
     c = db3.cursor()
     a = c.execute("SELECT * FROM doordata")
     for row in a:
-        print(row)
         if row[0] == str(door):
             if row[2] == "Yes":
-                print("here!!!")
                 c.execute("UPDATE doordata SET Should_Open = ? WHERE ID = ?", ("No", row[0]))
                 shoudl = 1
                 break
@@ -141,6 +139,65 @@ def insertdatabase_door(id, sock):
     
     db.close()
     
+
+
+def check_nfc(nfc, door):
+    
+        shoudl = False
+        print("Ola")
+        user1 = 0
+        user_permision = 0
+        door_permissions = 0
+    
+
+        db = sql.connect("mock_database.db")
+        c = db.cursor()
+        a = c.execute("SELECT * FROM userdoor_codes")
+        #a = c.execute("SELECT * FROM userdata")
+        
+        #b = c2.execute("SELECT * FROM doordata")
+        
+        #v = c3.execute("SELECT * FROM userdoor_codes")
+        
+        for row in a:
+            if row[1] == nfc:
+                user1 = row[0]     
+        db.close()
+        
+        
+        db2 = sql.connect("mock_database.db")
+        c = db2.cursor()
+        a = c.execute("SELECT * FROM userdata")
+        for row in a:
+            if row[0] == user1 :
+                user_permision = row[1]  
+        db2.close()
+        #user_permision = "normal"
+        
+        
+        db3 = sql.connect("mock_database.db")
+        c = db3.cursor()
+        a = c.execute("SELECT * FROM doordata")
+        for row in a:
+            if row[0] == door :
+                door_permissions = row[3]     
+        db3.close()
+        
+        print(user1)
+        print(user_permision)
+        print(door_permissions)
+        if user1 != 0:
+            if door_permissions == user_permision:
+                shoudl = True
+        
+    
+
+    
+        return shoudl
+
+
+    
+    
     
 
 def databasecreate_codes(db):
@@ -152,7 +209,7 @@ def databasecreate_codes(db):
     
     return None
 
-def insertdatabase_NFC(NFC, user):
+def insertdatabase_NFC(user, NFC):
     db = sql.connect("mock_database.db")
     c = db.cursor()
     c.execute("INSERT INTO userdoor_codes VALUES (?, ?)", (user, str(NFC)))
@@ -233,6 +290,7 @@ def handle_client(client_sock, addr):
 # Convert bytes to hexadecimal string
                 #hex_string = binascii.hexlify(encoded_message).decode()
                         insertdatabase_NFC(str(data), str(request["I'm"]))
+                        #insertdatabase_NFC(client_name, str("1b233a49"))
                         record = encryptor.update(str(data).encode("utf-8")) + encryptor.finalize()
                         st = {"NFC code": str( base64.b64encode (record), "utf-8")}
                         send_dict(client_sock, st)
@@ -254,14 +312,18 @@ def handle_client(client_sock, addr):
             message = "You are set"
             client_sock.send(message.encode())
             while True:
-                client_sock.recv(1024)
+                data = client_sock.recv(1024)
                 message = "Hello door"
                 should = check_if_remote_open(num.decode())
                 if should == 1:
                     message = "Door, remote open"
                     client_sock.send(message.encode())
                 else:
-                    client_sock.send(message.encode())
+                    if check_nfc(data.decode(), num.decode()):
+                        message = "You can open"
+                        client_sock.send(message.encode())
+                    else:
+                        client_sock.send(message.encode())
                 
             
  
