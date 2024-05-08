@@ -16,7 +16,7 @@ const SignInScreen = () => {
     const {height} = useWindowDimensions();
     const navigation = useNavigation();
 
-    const onSignInPressed = async () => {
+    const onSignInPressed = () => {
         console.warn('Sign In Pressed');
         console.log('Username before navigation:', username);
         /*

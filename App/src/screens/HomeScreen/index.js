@@ -11,7 +11,36 @@ const Home = () => {
   const { params } = route;
   const username = params && params.username ? params.username : '';
   const navigation = useNavigation();
-  const [isAdmin, setIsAdmin] = useState(false);
+
+  const API_URL ='http://192.168.85.27:3000';
+
+  const fetchData = async () => {
+    try {
+        const response = await fetch(`${API_URL}/door`);
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        console.log('Response from Flask backend:', data);
+    } catch (error) {
+        console.error('Error fetching data:', error);
+    }
+  };
+  /*
+  const fetchMore = async () =>{
+    try {
+      const response = await fetch(`${API_URL}/testing`);
+      if (!response.ok) {
+          throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      console.log('Response from Flask backend:', data);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+
+  }*/
+ /* const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(()=> {
     checkUserRole();
@@ -26,7 +55,7 @@ const Home = () => {
       setIsAdmin(true);
     }
 
-  }
+  }*/
 
   const userProfile = {
     photoURL: 'https://picsum.photos/200',
@@ -42,6 +71,9 @@ const Home = () => {
     console.log("button pressed")
     
     try {
+      fetchData();
+
+      /*
       fetch('http://192.168.56.1:3000/door', {
         method: 'GET',
         headers: {
@@ -54,7 +86,7 @@ const Home = () => {
       })
       .catch(error => {
       console.error('Error:', error);
-      });
+      });*/
       
       // register for the NFC tag with NDEF in it
       await NfcManager.requestTechnology(NfcTech.Ndef);
@@ -72,10 +104,12 @@ const Home = () => {
   }
 
   function generateNdef() {
+    /*fetchMore();
+    
     const ndefPayload = Ndef.encodeMessage([
       Ndef.textRecord('Hello, NFC!'),
     ]);
-    console.log('NFC code generated:', ndefPayload);
+    console.log('NFC code generated:', ndefPayload);*/
   }
 
   return (

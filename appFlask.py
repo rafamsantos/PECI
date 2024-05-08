@@ -1,16 +1,11 @@
 import json
 from flask import Flask, request, jsonify
+import subprocess
 
 app = Flask(__name__)
 
-
-
-#placeholder para utilizadores da BD
-userTestingBD = {
-            'regular': {'password': '12345', 'role': 'regular'},
-            'admin_user': {'password': 'admin_password', 'role': 'admin'}
-}
-
+command = "python app.py"
+'''
 @app.route('/signin', methods=['POST'])
 def login():
     data = request.get_json()
@@ -19,14 +14,24 @@ def login():
     # Check if the username exists and the password matches
     if username in userTestingBD and userTestingBD[username]['password'] == password:
         # Return a JWT token with user's role
-        return jsonify({'token': 'dummy_jwt_token', 'role': userTestingBD[username]['role']}), 200
+        return jsonify({'token': 'token', 'role': userTestingBD[username]['role']}), 200
     else:
         return 'Unauthorized', 401
+'''
+'''
+@app.route('/testing',methods = ['GET'])
+def testing_test():
+
+    subprocess.run(command, shell=True)
+    return jsonify("call")
+'''
 
 @app.route('/door', methods = ['GET'])
 def door_called():
    
-    return jsonify({"User":["Hello","My","World"]})
+
+    
+    return jsonify("Connection Established")
 
     #response = {'message': 'Data received successfully'}
     #return jsonify(response)

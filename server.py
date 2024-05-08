@@ -80,7 +80,7 @@ def databasecreate_door(db):
 def databasecreate_log(db):
     db = sql.connect("mock_database.db")
     c = db.cursor()
-    c.execute("""CREATE TABLE Logue(ID TEXT, DOOR TEXT)""")
+    c.execute("""CREATE TABLE Logue(ID TEXT, DOOR TEXT, TIM TEXT)""")
     db.commit()
     db.close()
     
@@ -109,10 +109,13 @@ def check_if_remote_open(door):
             if row[2] == "Yes":
                 c.execute("UPDATE doordata SET Should_Open = ? WHERE ID = ?", ("No", row[0]))
                 shoudl = 1
+                
                 break
     
     
     db3.commit()
+    if shoudl == 1:
+        add_log_file(door, "remote")
     
     return shoudl
 
@@ -128,6 +131,35 @@ def read_log(user):
     
     
     return stringue
+
+
+def add_log_file(door, user):
+    
+    db = sql.connect("mock_database.db")
+    c = db.cursor()
+    c.execute("INSERT INTO Logue VALUES (?, ?, ?)", (str(door), str(user), "1450"))
+    db.commit()
+    
+    db.close()
+    
+    
+    
+    
+    return None
+
+
+def print_log():
+    
+    strigue = ""
+    db3 = sql.connect("mock_database.db")
+    c = db3.cursor()
+    a = c.execute("SELECT * FROM Logue")
+    for row in a:
+        print(row)
+        print("\n")
+    db3.close()
+    
+    
 
 
 def insertdatabase_door(id, sock):
@@ -189,6 +221,7 @@ def check_nfc(nfc, door):
         if user1 != 0:
             if door_permissions == user_permision:
                 shoudl = True
+                add_log_file(door, user1)
         
     
 
@@ -312,6 +345,10 @@ def handle_client(client_sock, addr):
             message = "You are set"
             client_sock.send(message.encode())
             while True:
+                try:
+                    print_log()
+                except:
+                    print("No log\n")
                 data = client_sock.recv(1024)
                 message = "Hello door"
                 should = check_if_remote_open(num.decode())
@@ -348,9 +385,9 @@ def set_asymetric():
 
 # Create a socket object
 def main():
-    HOST = '192.168.118.147'  # Listen on all network interfaces 
+    HOST = '192.168.14.147'  # Listen on all network interfaces 
                                                                 
-    PORT = 12345      # Port to listen on
+    PORT = 12346     # Port to listen on
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # Get the local machine name and a port

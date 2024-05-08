@@ -1,3 +1,4 @@
+import signal
 import socket
 import threading
 import logging
@@ -34,8 +35,56 @@ from Crypto.Signature import PKCS1_v1_5
 from Crypto.Hash import SHA256
 import base64
 import json
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+exit_event = threading.Event()
+
+#@app.route('/door', methods = ['GET'])
+#def door_called():
+   
+#    return jsonify({"User":["Hello","My","World"]})
+
+def database_createsome(db):
+    db = sql.connect("app.db")
+    c = db.cursor()
+    c.execute("""CREATE TABLE data(MAC TEXT, RSA_Priv TEXT, RSA_Pub TEXT, SymmetricKey Text, UsernameAvailable TEXT, Command TEXT, DoorNum TEXT)""")
+    db.commit()
+    db.close()
+    
+    return None
+
+def database_dataRepo(db):
+    db = sql.connect("app.db")
+    c = db.cursor()
+    c.execute("""CREATE TABLE dataRepository(NFC TEXT, LOG TEXT)""")
+    db.commit()
+    db.close()
+    
+    return None
 
 backend = default_backend()
+
+def delete_dataRepository(db):
+    db = sql.connect("app.db")
+    c = db.cursor()
+    c.execute("""DROP TABLE dataRepository""")
+    db.commit()
+    db.close()
+
+
+    return None
+
+def database_insertrc(db):
+     
+    db = sql.connect("app.db")
+    c = db.cursor()
+    c.execute("INSERT INTO data VALUES (?, ?, ?, ?, ?, ?, ?)", ("None", "None","None","None","None","None","None"))
+    db.commit()
+    
+    db.close()
+
+    return None
 
 def set_asymetric(): 
 	priv = RSA.generate(2048)
@@ -43,18 +92,137 @@ def set_asymetric():
 
 	return priv, pub
 
-def main():
+
+def set_input(command): 
+    db = sql.connect("app.db")
+    c = db.cursor()
+    a = c.execute("SELECT * FROM data")
+    for row in a:
+            c.execute("UPDATE data SET Command = ? WHERE MAC = ?", (command, row[0]))
+            break
+            
+                   
+    db.close()
+    
+    
+    
+    
+    return None
+
+
+def set_door(command): 
+    db = sql.connect("app.db")
+    c = db.cursor()
+    a = c.execute("SELECT * FROM data")
+    for row in a:
+            c.execute("UPDATE data SET DoorNum = ? WHERE MAC = ?", (command, row[0]))
+            break
+            
+                   
+    db.close()
+    
+    
+    
+    
+    return None
+
+
+def check_for_input():
+    
+    db = sql.connect("app.db")
+    c = db.cursor()
+    a = c.execute("SELECT * FROM data")
+    comand = 4
+    for row in a:
+        if row[5] != "None":
+            comand = row[5]
+            c.execute("UPDATE data SET Command = ? WHERE MAC = ?", ("None", row[0]))
+            break
+            
+                   
+    db.close()
+    
+    return comand
+
+def check_for_door():
+    
+    door = 1
+    db = sql.connect("app.db")
+    c = db.cursor()
+    a = c.execute("SELECT * FROM data")
+    comand = 4
+    for row in a:
+        if row[5] != "None":
+            door = row[6]
+            break
+            
+                   
+    db.close()
+    
+    return door
+
+def run_Flask(exit_event):
+    while not exit_event.is_set():
+        app.run(host='192.168.85.27',port=3000,debug=False)
+
+
+
+
+def signal_handler(sig, frame):
+    print("Ctrl+C pressed. Exiting...")
+    exit_event.set()
+    
+
+
+
+
+def run_app():
 # Create a socket object
-    SERVER_HOST = '192.168.118.147'  # IP address of the server
-    SERVER_PORT = 12345                 # Port the server is listening on
+    
+    SERVER_HOST = '192.168.85.147'  # IP address of the server
+    SERVER_PORT = 12346              # Port the server is listening on
     
     client_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
+    
 # Connect the socket to the server's address and port
     client_sock.connect((SERVER_HOST, SERVER_PORT))
 
+    db4 = sql.connect("app.db")
+    c2 = db4.cursor()
+    try:
+            a2 = c2.execute("SELECT * FROM data")
+            print(9)
+            for row in a2:
+                print(row)
+            db4.close()
+    except(sql.Error):
+            database_createsome(db4)
+            database_insertrc(db4)
+            print(0)
+            db4.close()
+
+    db4 = sql.connect("app.db")
+    c3 = db4.cursor()
+    try:
+            a2 = c3.execute("SELECT * FROM dataRepository")
+            print(9)
+            for row in a2:
+                print(row)
+            delete_dataRepository(db4)
+            database_dataRepo(db4)
+            db4.close()
+    except(sql.Error):
+            database_dataRepo(db4)
+            print(0)
+            db4.close()
+   
+
+    #app.run(host='192.168.56.1',port=3000,debug=True)
+
 # Connect to the server
 # Receive data from the server
+    
     message = "Im client"
     client_sock.send(message.encode())
     
@@ -66,7 +234,9 @@ def main():
     response = client_sock.recv(1024)
     print(f"Server says: {response.decode()}")
     user = "1"
-    client_priv, client_pub = set_asymetric()	
+    client_priv = RSA.generate(2048)
+    client_pub = client_priv.publickey()
+    #client_priv, client_pub = set_asymetric()	
 	# d = client_pub.verify(user, j)	
     client_sock.send(client_pub.exportKey(format='PEM', passphrase=None, pkcs=1))
     server_pub = RSA.importKey(client_sock.recv(2048), passphrase=None)
@@ -96,7 +266,9 @@ def main():
     i_m = st["You are client"]
     while True:
         print("what you want to do?\n")
-        comand = input() #Var given via aplication
+        comand = check_for_input()
+        print(comand)
+        #comand = 3
         if(int(comand) == 1):
             ud = SHA256.new(bytearray(name.encode()))
             signaturaRSA = PKCS1_v1_5.new(client_priv)
@@ -121,18 +293,41 @@ def main():
         elif(int(comand) == 3): #addmistrator open door
             ud = SHA256.new(bytearray(name.encode()))
             signaturaRSA = PKCS1_v1_5.new(client_priv)
-            print("which door?\n")
-            do = input() #Var given via aplication about door to opne Note: Only door is 4
+           # print("which door?\n")
+            do = check_for_door()
             st = {"command": "Ademistrator_open", "door": comand, "I'm": name, "Sig": str(base64.b64encode(signaturaRSA.sign(ud)), "utf8"), "door": do}
             send_dict(client_sock, st)
         
+        #set_input(4)
         
         
+
+@app.route('/door', methods = ['GET'])
+def door_called():
+
+    return jsonify("Connection Established")   
+
     
-        
+def main():
+
+    app_handler = threading.Thread(target=run_app)
+    app_handler.start()
+
+    #app.run(host='192.168.14.27',port=3000,debug=True)
+
     
+  
 
 if __name__ == "__main__":
-    main()
-        
 
+    signal.signal(signal.SIGINT, signal_handler)
+
+    app_handler = threading.Thread(target=run_app)
+    flask_handler = threading.Thread(target=run_Flask, args=(exit_event,))
+    app_handler.start()
+    flask_handler.start() 
+
+    app_handler.join()
+    flask_handler.join()
+    #main()
+    #run_app()    
