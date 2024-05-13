@@ -31,8 +31,8 @@ WIFI_PASSWORD = 'Jmml1234.'
 bequiet()
 
 # Server configuration
-SERVER_HOST = '192.168.118.147'  # IP address of the server
-SERVER_PORT = 12345                 # Port the server is listening on
+SERVER_HOST = '192.168.85.147'  # IP address of the server
+SERVER_PORT = 12346                 # Port the server is listening on
 bequiet()
 
 # Connect to WiFi
@@ -43,6 +43,7 @@ wifi.connect(WIFI_SSID, WIFI_PASSWORD)
 
 # Wait until connected to WiFi
 while not wifi.isconnected():
+    wifi.connect(WIFI_SSID, WIFI_PASSWORD)
     tft.init()  # initialize display
     tft.fill(0)  # clear display
     tft.text(font, "Not Connected!!!", 70, 100, st7789.CYAN)  # print on tft screen
