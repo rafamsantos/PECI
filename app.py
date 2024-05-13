@@ -36,9 +36,19 @@ from Crypto.Hash import SHA256
 import base64
 import json
 from flask import Flask, request, jsonify
+from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
 exit_event = threading.Event()
+
+#dbFlask = SQLAlchemy(app)
+
+#class appCommand(dbFlask.model):
+#     id = dbFlask.Column(dbFlask.Integer, primary_key=True)
+#     commandFlask = dbFlask.Column(dbFlask.Integer)
+     
+
 
 #@app.route('/door', methods = ['GET'])
 #def door_called():
@@ -79,7 +89,7 @@ def database_insertrc(db):
      
     db = sql.connect("app.db")
     c = db.cursor()
-    c.execute("INSERT INTO data VALUES (?, ?, ?, ?, ?, ?, ?)", ("None", "None","None","None","None","None","None"))
+    c.execute("INSERT INTO data VALUES (?, ?, ?, ?, ?, ?, ?)", ("User", "None","None","None","None","None","None"))
     db.commit()
     
     db.close()
@@ -95,13 +105,16 @@ def set_asymetric():
 
 def set_input(command): 
     db = sql.connect("app.db")
+    print("access granted")
     c = db.cursor()
     a = c.execute("SELECT * FROM data")
+    print("granting more")
     for row in a:
             c.execute("UPDATE data SET Command = ? WHERE MAC = ?", (command, row[0]))
+            print(row)
             break
             
-                   
+    db.commit()               
     db.close()
     
     
@@ -118,7 +131,7 @@ def set_door(command):
             c.execute("UPDATE data SET DoorNum = ? WHERE MAC = ?", (command, row[0]))
             break
             
-                   
+    db.commit()               
     db.close()
     
     
@@ -139,7 +152,7 @@ def check_for_input():
             c.execute("UPDATE data SET Command = ? WHERE MAC = ?", ("None", row[0]))
             break
             
-                   
+    db.commit()               
     db.close()
     
     return comand
@@ -156,10 +169,10 @@ def check_for_door():
             door = row[6]
             break
             
-                   
+    db.commit()               
     db.close()
     
-    return door
+    return 1
 
 def run_Flask(exit_event):
     while not exit_event.is_set():
@@ -195,6 +208,8 @@ def run_app():
             print(9)
             for row in a2:
                 print(row)
+            
+            database_insertrc(db4)
             db4.close()
     except(sql.Error):
             database_createsome(db4)
@@ -218,7 +233,7 @@ def run_app():
             db4.close()
    
 
-    #app.run(host='192.168.56.1',port=3000,debug=True)
+   
 
 # Connect to the server
 # Receive data from the server
@@ -265,9 +280,9 @@ def run_app():
     decryptor = cipher.decryptor()
     i_m = st["You are client"]
     while True:
-        print("what you want to do?\n")
+        #print("what you want to do?\n")
         comand = check_for_input()
-        print(comand)
+        #print(comand)
         #comand = 3
         if(int(comand) == 1):
             ud = SHA256.new(bytearray(name.encode()))
@@ -279,6 +294,7 @@ def run_app():
             print(NFC_code)
             NFC_code = decryptor.update(base64.b64decode(NFC_code["NFC code"])) + decryptor.finalize()
             record = ndef.TextRecord(NFC_code)
+            set_input(4)
         elif(int(comand) == 2):
             ud = SHA256.new(bytearray(name.encode()))
             signaturaRSA = PKCS1_v1_5.new(client_priv)
@@ -289,6 +305,7 @@ def run_app():
             log = base64.b64decode(log)
             log = decryptor.update(log) + decryptor.finalize()
             print(log)
+            set_input(4)
         
         elif(int(comand) == 3): #addmistrator open door
             ud = SHA256.new(bytearray(name.encode()))
@@ -297,15 +314,34 @@ def run_app():
             do = check_for_door()
             st = {"command": "Ademistrator_open", "door": comand, "I'm": name, "Sig": str(base64.b64encode(signaturaRSA.sign(ud)), "utf8"), "door": do}
             send_dict(client_sock, st)
+            set_input(4)
         
         #set_input(4)
         
-        
+@app.route('/')
+def index():
+    return "Server Online"   
 
 @app.route('/door', methods = ['GET'])
 def door_called():
-
+    set_input(3)
+    print("Command sent")
     return jsonify("Connection Established")   
+
+@app.route('/getcommand', methods = ['POST'])
+def getcommand():
+    commandF = request.form['command']
+
+
+    post = appCommand(commandFlask = commandF)
+
+    dbFlask.session.add(post)
+    dbFlask.session.commit()
+
+    #return "<h1>Command: {} has been sent</h1>".format(commandF)
+    return "Command sent"
+
+    
 
     
 def main():
@@ -313,11 +349,7 @@ def main():
     app_handler = threading.Thread(target=run_app)
     app_handler.start()
 
-    #app.run(host='192.168.14.27',port=3000,debug=True)
-
     
-  
-
 if __name__ == "__main__":
 
     signal.signal(signal.SIGINT, signal_handler)
