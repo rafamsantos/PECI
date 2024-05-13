@@ -73,6 +73,38 @@ def database_dataRepo(db):
     
     return None
 
+def insert_database_NFC(NFC_code):
+    
+    db = sql.connect("app.db")
+    c = db.cursor()
+    c.execute("INSERT INTO dataRepository VALUES (?, ?)", (NFC_code, "None","None","None","None","None","None"))
+    db.commit()
+    
+    db.close()
+
+    return None
+
+
+def get_database_NFC(NFC_code):
+    
+    db = sql.connect("app.db")
+    print("access granted")
+    c = db.cursor()
+    a = c.execute("SELECT * FROM data")
+    print("granting more")
+    nfc = None
+    for row in a:
+            if row[0] == "None":
+                nfc = row[0]
+                c.execute("UPDATE data SET NFC = ? WHERE NFC = ?", ("None", row[0]))
+
+                break
+            
+    db.commit()               
+    db.close()
+    return nfc
+    
+
 backend = default_backend()
 
 def delete_dataRepository(db):
@@ -95,6 +127,7 @@ def database_insertrc(db):
     db.close()
 
     return None
+
 
 def set_asymetric(): 
 	priv = RSA.generate(2048)
@@ -293,6 +326,7 @@ def run_app():
             NFC_code = recv_dict(client_sock)
             print(NFC_code)
             NFC_code = decryptor.update(base64.b64decode(NFC_code["NFC code"])) + decryptor.finalize()
+            insert_database_NFC(NFC_code)
             record = ndef.TextRecord(NFC_code)
             set_input(4)
         elif(int(comand) == 2):
