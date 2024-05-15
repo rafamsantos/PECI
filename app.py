@@ -345,10 +345,9 @@ def run_app():
     decryptor = cipher.decryptor()
     i_m = st["You are client"]
     while True:
-        #print("what you want to do?\n")
+       
         comand = check_for_input()
-        #print(comand)
-        #comand = 3
+        
         if(int(comand) == 1):
             ud = SHA256.new(bytearray(name.encode()))
             signaturaRSA = PKCS1_v1_5.new(client_priv)
