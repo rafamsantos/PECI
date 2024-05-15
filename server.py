@@ -121,12 +121,13 @@ def check_if_remote_open(door):
 
 def read_log(user):
     
-    strigue = ""
+    stringue = ""
     db3 = sql.connect("mock_database.db")
     c = db3.cursor()
     a = c.execute("SELECT * FROM Logue when ID LIKE ?", (user))
     for row in a:
-        stringue = stringue+row+"\n"
+        if row[0] == user: 
+            stringue = stringue+row+"\n"
     db3.close()
     
     
