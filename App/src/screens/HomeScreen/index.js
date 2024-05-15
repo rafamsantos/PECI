@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet} from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, useWindowDimensions, Image} from 'react-native';
 //import AsyncStorage from '@react-native-async-storage/async-storage';
+import Logo from '../../../assets/images/ua2.png'
 import LowerBar from '../../components/LowerBar';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import UserProfile from '../../components/UserProfile';
@@ -11,8 +12,9 @@ const Home = () => {
   const { params } = route;
   const username = params && params.username ? params.username : '';
   const navigation = useNavigation();
+  const {height} = useWindowDimensions();
 
-  const API_URL ='http://192.168.85.27:3000';
+  const API_URL ='http://192.168.181.27:3000';
 
   const fetchData = async () => {
     try {
@@ -57,22 +59,15 @@ const Home = () => {
 
   }*/
 
-  const userProfile = {
-    photoURL: 'https://picsum.photos/200',
-    name: 'John Doe',
-    email: 'johndoe@example.com',
-    personalInfo: 'Engenharia de Computadores e Informática',
-  };
-
   //{isAdmin &&<LowerBar />} <-- substituir no LowerBar para implementar accesso exlusivo para o admin 
 
 
   async function readNdef() {
-    console.log("button pressed")
+    console.log("read NFC button pressed")
     
     try {
       fetchData();
-      
+      // Try android beam 
       // register for the NFC tag with NDEF in it
       await NfcManager.requestTechnology(NfcTech.Ndef);
       // the resolved tag object will contain `ndefMessage` property
@@ -88,7 +83,43 @@ const Home = () => {
     }
   }
 
+  
+async function writeNdef() {
+  let result = false;
+  console.log("WriteNFC button pressed")
+  try {
+    // STEP 1
+    await NfcManager.requestTechnology(NfcTech.Ndef);
+
+    const bytes = Ndef.encodeMessage([Ndef.textRecord('Hello NFC')]);
+    console.log("STEP1 done")
+    if (bytes) {
+      await NfcManager.ndefHandler // STEP 2
+        .writeNdefMessage(bytes); // STEP 3
+      result = true;
+      console.log("STEP2 and 3 done")
+    }
+  } catch (ex) {
+    console.warn('Oops!', ex);
+  } finally {
+    // STEP 4
+    console.log("STEP4 done")
+    NfcManager.cancelTechnologyRequest();
+  }
+
+  return result;
+}
+
+
+
+
+
+
+
+
+
   function generateNdef() {
+    console.log("generate NFC button pressed")
     fetchMore();
     
     /*const ndefPayload = Ndef.encodeMessage([
@@ -97,53 +128,90 @@ const Home = () => {
     console.log('NFC code generated:', ndefPayload);*/
   }
 
+  
+  const userProfile = {
+    email: username,
+  };
+
+  const buttonClickListener = (buttonName) => {
+    if (buttonName === 'Logs') {
+      navigation.navigate('Logs');
+    } else if (buttonName === 'Acessos') {
+      navigation.navigate('DoorAccess');
+    }
+  };
+
   return (
-    <View style={styles.container}>
-      <View style={styles.content}>
-        <UserProfile
-          photoURL={userProfile.photoURL}
-          name={userProfile.name}
-          email={userProfile.email}
-          personalInfo={userProfile.personalInfo}
-        />
+    <View style={[styles.container, { backgroundColor: 'white',height:height,  }]}>
+          <Image source={Logo} style={[styles.Logo]} />
+
         <View style={styles.content}>
-          <TouchableOpacity style={styles.button} onPress={() => readNdef()}>
-            <Text style={styles.buttonText}>Read NFC</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => generateNdef()}>
-            <Text style={styles.buttonText}>Generate NFC</Text>
-          </TouchableOpacity>
+            <View style={styles.textContent}>
+                <Text style={styles.welcomeText}>Bem-vindo{"\n"}{username}</Text>
+            </View>
+            <View style={styles.buttonsContainer}>
+                <TouchableOpacity style={styles.button} onPress={() => readNdef()}>
+                    <Text style={styles.buttonText}>Read NFC</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.button} onPress={() => generateNdef()}>
+                    <Text style={styles.buttonText}>Generate NFC</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.button} onPress={() => buttonClickListener('Logs')}>
+                    <Text style={styles.buttonText}>Logs</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.button} onPress={() => buttonClickListener('Acessos')}>
+                    <Text style={styles.buttonText}>Portas</Text>
+                </TouchableOpacity>
+            </View>
         </View>
-      </View>
-      <LowerBar />
     </View>
-  );
+);
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+      flex: 1,
   },
   content: {
-    flex: 1,
-    color: 'black',
-    justifyContent: 'center',
-    alignItems: 'center',
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+  },
+  textContent: {
+      alignItems: 'center',
+  },
+  welcomeText: {
+      color: 'black',
+      fontSize: 30,
+      textAlign: 'center',
+  },
+  buttonsContainer: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'center',
+      marginTop: 150,
   },
   button: {
-    padding: 15,
-    backgroundColor: '#0080FF',
-    borderRadius: 5,
-    width: 150,
-    height: 50,
-    textAlign: 'center',
-    marginBottom: 20,
+      padding: 15,
+      backgroundColor: '#0080FF',
+      borderRadius: 5,
+      width: 150,
+      height: 80,
+      justifyContent: 'center',
+      alignItems: 'center',
+      margin: 5,
   },
   buttonText: {
-    color: 'white',
-    textAlign: 'center',
-    fontSize: 16,
+      color: 'white',
+      textAlign: 'center',
+      fontSize: 16,
   },
+  Logo:{
+    width: 200,
+    maxHeight: 80,
+    marginTop: 20,
+    
+    marginLeft:110
+},
 });
-
 export default Home;

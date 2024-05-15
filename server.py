@@ -391,7 +391,7 @@ def set_asymetric():
 
 # Create a socket object
 def main():
-    HOST = '192.168.85.147'  # Listen on all network interfaces 
+    HOST = '192.168.181.27'  # Listen on all network interfaces 
                                                                 
     PORT = 12346     # Port to listen on
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

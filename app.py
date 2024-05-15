@@ -140,10 +140,9 @@ def set_asymetric():
 
 def set_input(command): 
     db = sql.connect("app.db")
-    print("access granted")
+    print("input set")
     c = db.cursor()
     a = c.execute("SELECT * FROM data")
-    print("granting more")
     for row in a:
             c.execute("UPDATE data SET Command = ? WHERE MAC = ?", (command, row[0]))
             print(row)
@@ -168,10 +167,7 @@ def set_door(command):
             
     db.commit()               
     db.close()
-    
-    
-    
-    
+   
     return None
 
 
@@ -239,16 +235,17 @@ def get_database_log():
     db.close()
     return log
 
-def run_Flask(exit_event):
-    while not exit_event.is_set():
-        app.run(host='192.168.85.27',port=3000,debug=False)
+#Start flask server
+def run_Flask():
+    #while not exit_event.is_set():
+    app.run(host='192.168.181.27',port=3000,debug=False)
 
 
 
 
-def signal_handler(sig, frame):
-    print("Ctrl+C pressed. Exiting...")
-    exit_event.set()
+# def signal_handler(sig, frame):
+#     print("Ctrl+C pressed. Exiting...")
+#     exit_event.set()
     
 
 
@@ -257,7 +254,7 @@ def signal_handler(sig, frame):
 def run_app():
 # Create a socket object
     
-    SERVER_HOST = '192.168.85.147'  # IP address of the server
+    SERVER_HOST = '192.168.181.27'  # IP address of the server
     SERVER_PORT = 12346              # Port the server is listening on
     
     client_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -347,8 +344,8 @@ def run_app():
     while True:
        
         comand = check_for_input()
-        
-        if(int(comand) == 1):
+       
+        if(int(comand) == 1): #Generate NFC
             ud = SHA256.new(bytearray(name.encode()))
             signaturaRSA = PKCS1_v1_5.new(client_priv)
             st = {"command": "NFC", "door": comand, "I'm": name, "Sig": str(base64.b64encode(signaturaRSA.sign(ud)), "utf8")}
@@ -361,7 +358,8 @@ def run_app():
             print("NFC is in database now")
             record = ndef.TextRecord(NFC_code)
             set_input(4)
-        elif(int(comand) == 2):
+        
+        elif(int(comand) == 2):#Logs
             ud = SHA256.new(bytearray(name.encode()))
             signaturaRSA = PKCS1_v1_5.new(client_priv)
             st = {"command": "LOG", "door": comand, "I'm": name, "Sig": str(base64.b64encode(signaturaRSA.sign(ud)), "utf8")}
@@ -382,21 +380,33 @@ def run_app():
             set_input(4)
         
         #set_input(4)
-        
+    
+#Flaks Routes
+
 @app.route('/')
 def index():
     return "Server Online"   
 
 @app.route('/door', methods = ['GET'])
 def door_called():
-    set_input(3)
+    set_input(2)
     print("Command sent")
     return jsonify("Connection Established")   
 
 @app.route('/checkNFC', methods = ['GET'])
 def getcommand():
-    set_input(2)
+    set_input(1)
     return jsonify("NFC generated")
+
+@app.route('/opendoor', methods = ['GET'])
+def door_opened():
+    set_input(3)
+    print("Command sent")
+    return jsonify("Connection Established") 
+
+
+
+
 
     
 
@@ -409,10 +419,10 @@ def main():
     
 if __name__ == "__main__":
 
-    signal.signal(signal.SIGINT, signal_handler)
+    #signal.signal(signal.SIGINT, signal_handler)
 
     app_handler = threading.Thread(target=run_app)
-    flask_handler = threading.Thread(target=run_Flask, args=(exit_event,))
+    flask_handler = threading.Thread(target=run_Flask)
     app_handler.start()
     flask_handler.start() 
 

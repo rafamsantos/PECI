@@ -1,7 +1,7 @@
 import React, {useState}from 'react'
 import { View, Text, Image, StyleSheet, useWindowDimensions} from 'react-native'
 //import AsyncStorage from '@react-native-async-storage/async-storage';
-import Logo from '../../../assets/images/ua.png'
+import Logo from '../../../assets/images/ua2.png'
 import CustomInput from '../../components/CustomInput';
 import CustomButton from '../../components/CustomButton';
 import { useNavigation } from '@react-navigation/native';
@@ -51,12 +51,11 @@ const SignInScreen = () => {
     };
 
     return (
-        <View style={style.root}>
+        <View style={[style.root, { backgroundColor: 'white',height: height}]}>
             <Image source={Logo} style={[style.Logo,{height: height*0.3}]} resizeMode='contain'/>
             <CustomInput placeholder="email" value={username} setValue={setUsername}/>
             <CustomInput placeholder="Password" value= {password} setValue={setPassword} secureTextEntry={true}/>    
             <CustomButton text="Sign In" onPress={onSignInPressed}/>
-        
         </View>
     );
 };
@@ -65,11 +64,12 @@ const style = StyleSheet.create({
     root:{
         alignItems: 'center',
         padding: 20,
+        marginTop: 0,
     },
     Logo:{
-        width: '70%',
-        maxWidth:500,
-        maxHeight: 200,
+        maxHeight: 100,
+        marginTop: 20,
+        marginBottom: 100,
     },
 });
- export default SignInScreen;
+export default SignInScreen;
