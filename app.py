@@ -398,7 +398,7 @@ def door_called():
 
 @app.route('/checkNFC', methods = ['GET'])
 def getcommand():
-    set_input(1)
+    set_input(2)
     return jsonify("NFC generated")
 
     
