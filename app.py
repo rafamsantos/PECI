@@ -22,6 +22,8 @@ import math
 import random
 import rsa
 import ndef
+#import nfcpy
+#from ndef import NdefMessage
 import binascii
 from Crypto.Cipher import AES
 from cryptography.hazmat.primitives import padding
@@ -77,7 +79,7 @@ def insert_database_NFC(NFC_code):
     
     db = sql.connect("app.db")
     c = db.cursor()
-    c.execute("INSERT INTO dataRepository VALUES (?, ?)", (NFC_code, "None","None","None","None","None","None"))
+    c.execute("INSERT INTO dataRepository VALUES (?, ?)", (NFC_code, "None"))
     db.commit()
     
     db.close()
@@ -96,7 +98,7 @@ def get_database_NFC(NFC_code):
     for row in a:
             if row[0] == "None":
                 nfc = row[0]
-                c.execute("UPDATE data SET NFC = ? WHERE NFC = ?", ("None", row[0]))
+                c.execute("UPDATE dataRepository SET NFC = ? WHERE NFC = ?", ("None", row[0]))
 
                 break
             
@@ -206,6 +208,36 @@ def check_for_door():
     db.close()
     
     return 1
+
+def insert_database_log(log):
+
+    db = sql.connect("app.db")
+    c = db.cursor()
+    c.execute("INSERT INTO dataRepository VALUES (?, ?)", ("None", log))
+    db.commit()
+
+    db.close()
+
+    return None
+
+def get_database_log():
+
+    db = sql.connect("app.db")
+    print("access granted")
+    c = db.cursor()
+    a = c.execute("SELECT * FROM dataRepository")
+    print("granting more")
+    log = None
+    for row in a:
+            if row[1] == "None":
+                log = row[1]
+                c.execute("UPDATE dataRepository  SET LOG = ? WHERE LOG = ?", ("None", row[1]))
+
+                break
+
+    db.commit()
+    db.close()
+    return log
 
 def run_Flask(exit_event):
     while not exit_event.is_set():
@@ -327,6 +359,7 @@ def run_app():
             print(NFC_code)
             NFC_code = decryptor.update(base64.b64decode(NFC_code["NFC code"])) + decryptor.finalize()
             insert_database_NFC(NFC_code)
+            print("NFC is in database now")
             record = ndef.TextRecord(NFC_code)
             set_input(4)
         elif(int(comand) == 2):
@@ -339,6 +372,7 @@ def run_app():
             log = base64.b64decode(log)
             log = decryptor.update(log) + decryptor.finalize()
             print(log)
+            insert_database_log(log)
             set_input(4)
         
         elif(int(comand) == 3): #addmistrator open door
@@ -362,18 +396,10 @@ def door_called():
     print("Command sent")
     return jsonify("Connection Established")   
 
-@app.route('/getcommand', methods = ['POST'])
+@app.route('/checkNFC', methods = ['GET'])
 def getcommand():
-    commandF = request.form['command']
-
-
-    post = appCommand(commandFlask = commandF)
-
-    dbFlask.session.add(post)
-    dbFlask.session.commit()
-
-    #return "<h1>Command: {} has been sent</h1>".format(commandF)
-    return "Command sent"
+    set_input(1)
+    return jsonify("NFC generated")
 
     
 
