@@ -365,12 +365,10 @@ def run_app():
         elif(int(comand) == 2):
             ud = SHA256.new(bytearray(name.encode()))
             signaturaRSA = PKCS1_v1_5.new(client_priv)
-            st = {"command": "Ademistrator_open", "door": comand, "I'm": name, "Sig": str(base64.b64encode(signaturaRSA.sign(ud)), "utf8")}
+            st = {"command": "LOG", "door": comand, "I'm": name, "Sig": str(base64.b64encode(signaturaRSA.sign(ud)), "utf8")}
             send_dict(client_sock, st)
-            st = recv_dict(client_sock)
-            log = st["The Logs"]
-            log = base64.b64decode(log)
-            log = decryptor.update(log) + decryptor.finalize()
+            log = client_sock.recv(1024)
+            log = log.decode()
             print(log)
             insert_database_log(log)
             set_input(4)

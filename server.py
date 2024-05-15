@@ -122,14 +122,19 @@ def check_if_remote_open(door):
 def read_log(user):
     
     stringue = ""
+    print("Here3!!!")
     db3 = sql.connect("mock_database.db")
     c = db3.cursor()
-    a = c.execute("SELECT * FROM Logue when ID LIKE ?", (user))
+    a = c.execute("SELECT * FROM Logue")
+    print("Here!!!")
     for row in a:
         if row[0] == user: 
             stringue = stringue+row+"\n"
     db3.close()
+    print("Here2!!!")
     
+    if stringue == "":
+        stringue = "None"
     
     return stringue
 
@@ -329,10 +334,10 @@ def handle_client(client_sock, addr):
                         st = {"NFC code": str( base64.b64encode (record), "utf-8")}
                         send_dict(client_sock, st)
                     elif request["command"] == "LOG":
-                            to_sent = read_log(request["User"])
-                            record = encryptor.update(str(to_sent).encode("utf-8")) + encryptor.finalize()
-                            st = {"The Logs": str(base64.b64encode (record), "utf8")}
-                            send_dict(to_sent)
+                            print("Here4!!!")
+                            to_sent = read_log(str(request["I'm"]))
+                            #record = encryptor.update(str(to_sent).encode("utf-8")) + encryptor.finalize()
+                            client_sock.send(to_sent.encode())
                     
                     elif request["command"] == "Ademistrator_open":
                         #open_door(client_name)
