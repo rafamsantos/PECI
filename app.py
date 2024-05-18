@@ -60,7 +60,7 @@ exit_event = threading.Event()
 def database_createsome(db):
     db = sql.connect("app.db")
     c = db.cursor()
-    c.execute("""CREATE TABLE data(MAC TEXT, RSA_Priv TEXT, RSA_Pub TEXT, SymmetricKey Text, UsernameAvailable TEXT, Command TEXT, DoorNum TEXT)""")
+    c.execute("""CREATE TABLE data(MAC TEXT, RSA_Priv TEXT, RSA_Pub TEXT, SymmetricKey Text, MAC2 TEXT, Command TEXT, DoorNum TEXT)""")
     db.commit()
     db.close()
     
@@ -155,6 +155,60 @@ def set_input(command):
     
     
     return None
+
+def set_MAC(mac): 
+    db = sql.connect("app.db")
+    print("input set")
+    c = db.cursor()
+    a = c.execute("SELECT * FROM data")
+    for row in a:
+            c.execute("UPDATE data SET MAC2 = ? WHERE MAC = ?", (mac, row[0]))
+            print(row)
+            break
+            
+    db.commit()               
+    db.close()
+    
+    
+    
+    
+    return None
+
+
+def get_MAC(): 
+    db = sql.connect("app.db")
+    print("input set")
+    c = db.cursor()
+    a = c.execute("SELECT * FROM data")
+    mac = 0
+    for row in a:
+            mac = row[4]
+            break
+                        
+    db.close()
+    
+    
+    
+    
+    return mac
+
+def do_not_have_MAC():
+    db = sql.connect("app.db")
+    print("input set")
+    c = db.cursor()
+    a = c.execute("SELECT * FROM data")
+    mac = True
+    for row in a:
+            if row[4] != "None":
+                mac = False
+            break
+                        
+    db.close()
+    
+    
+    
+    
+    return mac
 
 
 def set_door(command): 
@@ -265,6 +319,7 @@ def run_app():
 
     db4 = sql.connect("app.db")
     c2 = db4.cursor()
+    new = 0
     try:
             a2 = c2.execute("SELECT * FROM data")
             print(9)
@@ -272,12 +327,14 @@ def run_app():
                 print(row)
             
             database_insertrc(db4)
+            new = 1
             db4.close()
     except(sql.Error):
             database_createsome(db4)
             database_insertrc(db4)
             print(0)
             db4.close()
+            new = 0
 
     db4 = sql.connect("app.db")
     c3 = db4.cursor()
@@ -307,9 +364,21 @@ def run_app():
     name = "rmlameiras@ua.pt"
     message = "rmlameiras@ua.pt"
     client_sock.send(message.encode())
+    response = client_sock.recv(1024) 
+    if do_not_have_MAC():
+        message = "-1"
+        client_sock.send(message.encode())
+        mac = client_sock.recv(1024)
+        set_MAC(mac.decode())
+        message = "Done"
+        client_sock.send(message.encode())
     
-    response = client_sock.recv(1024)
-    print(f"Server says: {response.decode()}")
+    else:
+        mac = get_MAC()
+        client_sock.send(mac.encode())
+        
+    response = client_sock.recv(1024)    
+    print(f"Server says: {response.decode()}")  
     user = "1"
     client_priv = RSA.generate(2048)
     client_pub = client_priv.publickey()

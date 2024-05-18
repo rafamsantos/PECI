@@ -44,7 +44,7 @@ many_doors = 0
 def databasecreate_user(db):
     db = sql.connect("mock_database.db")
     c = db.cursor()
-    c.execute("""CREATE TABLE userdata(ID TEXT, PERMISSIONS TEXT)""")
+    c.execute("""CREATE TABLE userdata(ID TEXT, PERMISSIONS TEXT, MAC TEXT)""")
     db.commit()
     db.close()
     
@@ -65,6 +65,67 @@ def permission(user):
     
     
     return per
+
+
+def check_if_true(user):
+    per = "normal"
+    db3 = sql.connect("mock_database.db")
+    c = db3.cursor()
+    a = c.execute("SELECT * FROM userdata")
+    truth = False
+    for row in a:
+        if row[0] == user:
+            if row[2] == "None":
+                truth = True
+                break
+    db3.close()
+    
+    
+    
+    
+    return truth
+
+def set_new_mac(user):
+    per = "normal"
+    db3 = sql.connect("mock_database.db")
+    c = db3.cursor()
+    a = c.execute("SELECT * FROM userdata")
+    random_number= 0
+    
+    for row in a:
+        if row[0] == user:
+            random_number = random.randint(100000, 999999)
+            c.execute("UPDATE userdata SET MAC = ? WHERE ID = ?", (str(random_number), str(user)))
+            break
+        
+    db3.commit()
+    db3.close()
+    
+    
+    return str(random_number)
+    
+    
+    
+
+
+def get_mac(user):
+    per = "normal"
+    db3 = sql.connect("mock_database.db")
+    c = db3.cursor()
+    a = c.execute("SELECT * FROM userdata")
+    mac = -9
+    for row in a:
+        if row[0] == user:
+            mac = row[2]
+            break
+    
+    db3.close()
+        
+    
+    
+    
+    
+    return mac
 
 
 def databasecreate_door(db):
@@ -265,14 +326,39 @@ def handle_client(client_sock, addr):
             client_sock.send(message.encode())
             print(f"Got connection from {addr}")
             
+            
             client_name = client_sock.recv(1024).decode() #Turnar compativel com a autenticação
+            message = "Send mac"
+            client_sock.send(message.encode())
+            new = client_sock.recv(1024).decode()
+            if new == "-1":
+                if check_if_true(client_name):
+                    mac = set_new_mac(client_name)
+                    client_sock.send(mac.encode())
+                    client_sock.recv(1024).decode()
+                    
+                
+                else:
+                    message = "Wring phone"
+                    client_sock.send(message.encode())
+                    client_sock.close()
+                    return None
+            else:
+                if get_mac(client_name) != new:
+                    print("HERE")
+                    message = "Wring phone"
+                    client_sock.send(message.encode())
+                    client_sock.close()
+                    return None
             
             
-            permi = permission(client_name)
+            
             
             print(f"Got connection from {addr}")
 
         # Send data to the client
+        
+            permi = permission(client_name)
             message = "Hello, client. Thanks for connecting!"
             client_sock.send(message.encode())
         
@@ -391,7 +477,7 @@ def set_asymetric():
 
 # Create a socket object
 def main():
-    HOST = '192.168.181.27'  # Listen on all network interfaces 
+    HOST = '192.168.1.187'  # Listen on all network interfaces 
                                                                 
     PORT = 12346     # Port to listen on
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
