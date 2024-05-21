@@ -49,8 +49,8 @@ from zxcvbn import zxcvbn
 
 app = Flask(__name__)
 
-# Sendgrid configuration
-
+# Sendgrid configuration    Tirem os espaços e descomentem na parte de baixo
+#SENDGRID_API_KEY = 'SG.2dHir0cV     RiqMQwAtxBbSSw.WHxl6ETM5    Kk_GgjovMFsoMn4BzuuHRPXoh-cjcg-0Ks'
 
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
