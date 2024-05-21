@@ -6,6 +6,7 @@ import LowerBar from '../../components/LowerBar';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import UserProfile from '../../components/UserProfile';
 import NfcManager, { Ndef, NfcTech } from "react-native-nfc-manager";
+import CONFIG from '../../config_url';
 
 const Home = () => {
   const route = useRoute();
@@ -15,7 +16,7 @@ const Home = () => {
   const navigation = useNavigation();
   const {height} = useWindowDimensions();
 
-  const API_URL ='http://192.168.95.27:3000';
+  const API_URL =CONFIG.FLASK_URL;
 
   // useEffect(() => {
   //   fetchDoorData();

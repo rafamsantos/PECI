@@ -34,6 +34,8 @@ from Crypto.Signature import PKCS1_v1_5
 from Crypto.Hash import SHA256
 import base64
 import json
+from URL import IP_AD
+
 
 # Function to handle each client's connection
 backend = default_backend()
@@ -490,7 +492,7 @@ def set_asymetric():
 
 # Create a socket object
 def main():
-    HOST = '192.168.95.27'  # Listen on all network interfaces 
+    HOST = IP_AD  # Listen on all network interfaces 
                                                                 
     PORT = 12346     # Port to listen on
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

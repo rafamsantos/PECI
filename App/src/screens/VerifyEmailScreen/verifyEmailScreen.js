@@ -6,6 +6,7 @@ import CustomInput from '../../components/CustomInput';
 import CustomButton from '../../components/CustomButton';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import LowerBar from '../../components/LowerBar';
+import CONFIG from '../../config_url';
 
 
 const VerifyEmailScreen = () => {
@@ -17,7 +18,7 @@ const VerifyEmailScreen = () => {
     const {height} = useWindowDimensions();
     const navigation = useNavigation();
 
-    const API_URL ='http://192.168.95.27:3000';
+    const API_URL =CONFIG.FLASK_URL;
 
     const onConfirmPressed = async () => {
 

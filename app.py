@@ -46,6 +46,7 @@ from flask_jwt_extended import JWTManager, create_access_token, jwt_required, ge
 from datetime import datetime, timedelta
 import requests
 from zxcvbn import zxcvbn
+from URL import IP_AD
 
 app = Flask(__name__)
 
@@ -462,7 +463,7 @@ def get_doorNum_ADMIN():
 #Start flask server
 def run_Flask():
     #while not exit_event.is_set():
-    app.run(host='192.168.95.27',port=3000,debug=False)
+    app.run(host=IP_AD,port=3000,debug=False)
 
 
 
@@ -478,7 +479,7 @@ def run_Flask():
 def run_app():
 # Create a socket object
     
-    SERVER_HOST = '192.168.95.27'  # IP address of the server
+    SERVER_HOST = IP_AD  # IP address of the server
     SERVER_PORT = 12346              # Port the server is listening on
     
     client_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

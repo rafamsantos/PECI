@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity, Modal, Button } fro
 import HigherBar from '../../components/HigherBar';
 import Navigation from '../../navigation';
 import { useRoute } from '@react-navigation/native';
+import CONFIG from '../../config_url';
 
 
 
@@ -30,7 +31,7 @@ const DoorAccessScreen = ({ navigation }) => {
   // }, [data]);
 
 
-  const API_URL ='http://192.168.95.27:3000';
+  const API_URL =CONFIG.FLASK_URL;
 
   const openDoor = async () => {
     try {

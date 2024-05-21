@@ -8,6 +8,8 @@ import st7789
 import socket
 import vga1_bold_16x32 as font
 import os
+from URL import IP_AD
+
 buzzer = PWM(Pin(15))  # buzzer pin connected to GPIO15
 
 def bequiet():
@@ -41,7 +43,7 @@ bequiet()
 # bequiet()
 
 # Server configuration
-SERVER_HOST = '192.168.95.27'  # IP address of the server
+SERVER_HOST = IP_AD  # IP address of the server
 SERVER_PORT = 12346                 # Port the server is listening on
 bequiet()
 
