@@ -25,6 +25,11 @@ tft = st7789.ST7789(spi, 240, 240, reset=Pin(12, Pin.OUT), cs=Pin(9, Pin.OUT), d
 
 bequiet()
 
+#WiFi module configuration
+# WIFI_SSID = 'MEO-F495A0'
+# WIFI_PASSWORD = 'f234c22143'
+# bequiet()
+
 # WiFi module configuration
 WIFI_SSID = 'Engiman'
 WIFI_PASSWORD = 'xhnr9864'
@@ -36,7 +41,7 @@ bequiet()
 # bequiet()
 
 # Server configuration
-SERVER_HOST = '192.168.181.27'  # IP address of the server
+SERVER_HOST = '192.168.95.27'  # IP address of the server
 SERVER_PORT = 12346                 # Port the server is listening on
 bequiet()
 

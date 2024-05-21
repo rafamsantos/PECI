@@ -1,5 +1,5 @@
 import React, {useState}from 'react'
-import { View, Text, Image, StyleSheet, useWindowDimensions} from 'react-native'
+import { View, Text, Image, StyleSheet, useWindowDimensions, Alert} from 'react-native'
 //import AsyncStorage from '@react-native-async-storage/async-storage';
 import Logo from '../../../assets/images/ua.png'
 import CustomInput from '../../components/CustomInput';
@@ -12,11 +12,14 @@ const RegisterScreen = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [message, setMessage] = useState('');
 
     const {height} = useWindowDimensions();
     const navigation = useNavigation();
 
-    const handleRegistration = () => {
+    const API_URL ='http://192.168.95.27:3000';
+
+    const handleRegistration = async () => {
         if (!validateEmail(email)) {
             Alert.alert('Invalid Email', 'Please enter a valid UA email.');
             return;
@@ -31,12 +34,27 @@ const RegisterScreen = () => {
             Alert.alert('Password Mismatch', 'Please make sure the passwords match.');
             return;
         }
-
+        console.log("checks passed")
         // Envio dos dados de register para o backend
-    
-        // Forçar navegação aqui? Ou ocorre no index da pasta navigation?
-        // navigation.navigate('signInScreen');
+        const response = await fetch(`${API_URL}/register`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email, password, confirmPassword })
+            });
+            console.log("waiting response")
+            const result = await response.json();
+            setMessage(result.message);
+            console.log("response got")
+            if (result.message === 'Redirecting to Email Verification'){
+                navigation.navigate('VerifyEmailScreen' , {email, password});
+            }else
+            {
+                Alert.alert('Registration Error', result.message);
+            }
     };
+    
 
     const validateEmail = (email) => {
         return /\b[A-Za-z0-9._%+-]+@ua\.pt\b/.test(email);

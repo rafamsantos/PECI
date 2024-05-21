@@ -10,11 +10,17 @@ import NfcManager, { Ndef, NfcTech } from "react-native-nfc-manager";
 const Home = () => {
   const route = useRoute();
   const { params } = route;
+  const [data, setData] = useState(null);
   const username = params && params.username ? params.username : '';
   const navigation = useNavigation();
   const {height} = useWindowDimensions();
 
-  const API_URL ='http://192.168.181.27:3000';
+  const API_URL ='http://192.168.95.27:3000';
+
+  // useEffect(() => {
+  //   fetchDoorData();
+  // }, []);
+
 
   const fetchData = async () => {
     try {
@@ -28,7 +34,27 @@ const Home = () => {
         console.error('Error fetching data:', error);
     }
   };
+
+  const fetchDoorNum = async () => {
+    try {
+        const response = await fetch(`${API_URL}/doorNum`);
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        return data
+    } catch (error) {
+        console.error('Error fetching data:', error);
+        return null
+    }
+  };
   
+  const fetchDoorData = async () => {
+    const fetchedDoorData = await fetchDoorNum();
+    setData(fetchedDoorData);
+  }
+
+
   const fetchMore = async () =>{
     try {
       const response = await fetch(`${API_URL}/checkNFC`);
@@ -42,6 +68,7 @@ const Home = () => {
     }
 
   }
+
  /* const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(()=> {
@@ -88,34 +115,34 @@ async function writeNdef() {
   let result = false;
   console.log("WriteNFC button pressed")
   try {
+    fetchData();
+
     // STEP 1
+    console.log("STEP1 not done")
+
     await NfcManager.requestTechnology(NfcTech.Ndef);
 
-    const bytes = Ndef.encodeMessage([Ndef.textRecord('Hello NFC')]);
-    console.log("STEP1 done")
+    console.log("STEP1 is being done");
+
+    const bytes = Ndef.encodeMessage([Ndef.textRecord('1C443B87')]);
+
+    console.log("STEP1 done");
+
     if (bytes) {
-      await NfcManager.ndefHandler // STEP 2
-        .writeNdefMessage(bytes); // STEP 3
+      await NfcManager.ndefHandler.writeNdefMessage(bytes); // STEP 3
       result = true;
-      console.log("STEP2 and 3 done")
+      console.log("STEP2 and 3 done");
     }
   } catch (ex) {
     console.warn('Oops!', ex);
   } finally {
     // STEP 4
-    console.log("STEP4 done")
+    console.log("STEP4 done");
     NfcManager.cancelTechnologyRequest();
   }
 
   return result;
 }
-
-
-
-
-
-
-
 
 
   function generateNdef() {
@@ -137,7 +164,7 @@ async function writeNdef() {
     if (buttonName === 'Logs') {
       navigation.navigate('Logs');
     } else if (buttonName === 'Acessos') {
-      navigation.navigate('DoorAccess');
+      navigation.navigate('DoorAccess',{username:username, fetchedData: data});
     }
   };
 
@@ -150,7 +177,7 @@ async function writeNdef() {
                 <Text style={styles.welcomeText}>Bem-vindo{"\n"}{username}</Text>
             </View>
             <View style={styles.buttonsContainer}>
-                <TouchableOpacity style={styles.button} onPress={() => readNdef()}>
+                <TouchableOpacity style={styles.button} onPress={() => writeNdef()}>
                     <Text style={styles.buttonText}>Read NFC</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.button} onPress={() => generateNdef()}>

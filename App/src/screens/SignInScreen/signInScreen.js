@@ -1,5 +1,5 @@
 import React, {useState}from 'react'
-import { View, Text, Image, StyleSheet, useWindowDimensions} from 'react-native'
+import { View, Text, Image, StyleSheet, useWindowDimensions, Alert} from 'react-native'
 //import AsyncStorage from '@react-native-async-storage/async-storage';
 import Logo from '../../../assets/images/ua2.png'
 import CustomInput from '../../components/CustomInput';
@@ -12,11 +12,19 @@ const SignInScreen = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [message, setMessage] = useState('');
 
     const {height} = useWindowDimensions();
     const navigation = useNavigation();
 
-    const onSignInPressed = () => {
+    const API_URL ='http://192.168.95.27:3000';
+
+    const onRegisterPressed = async () => {
+        navigation.navigate('RegisterScreen');
+    };
+
+
+    const onSignInPressed = async () => {
         console.warn('Sign In Pressed');
         console.log('Username before navigation:', username);
         /*
@@ -47,7 +55,27 @@ const SignInScreen = () => {
             console.error('Sign in error:',error);
             setError('Try again.');
         }*/
-        navigation.navigate('Home', { username: username })
+        //navigation.navigate('Home', { username: username })
+        //navigation.navigate('VerifyCodeScreen')
+        const response = await fetch(`${API_URL}/signin`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({username, password})
+            });
+    
+        const result = await response.json();
+        setMessage(result.message);
+
+        if (result.message === 'Success in Sending Verification Code'){
+            navigation.navigate('VerifyCodeScreen', {username : username});
+        }else if(result.message === 'Session is open'){
+            navigation.navigate('Home', {username : username});
+        }else{
+            Alert.alert('Registration Error', result.message);
+        }
+
     };
 
     return (
@@ -56,6 +84,7 @@ const SignInScreen = () => {
             <CustomInput placeholder="email" value={username} setValue={setUsername}/>
             <CustomInput placeholder="Password" value= {password} setValue={setPassword} secureTextEntry={true}/>    
             <CustomButton text="Sign In" onPress={onSignInPressed}/>
+            <CustomButton text="Register" onPress={onRegisterPressed}/>
         </View>
     );
 };

@@ -16,7 +16,21 @@ const DoorAccessScreen = ({ navigation }) => {
     // Add more doors as needed
   ];
 
-  const API_URL ='http://192.168.181.27:3000';
+  const route = useRoute();
+  const { params } = route;
+  const username = params && params.username ? params.username : ''; 
+  const data = params.data;
+
+  // //const [doorList,setDoorList] = useState([])
+
+  // useEffect(() => {
+  //   if (data) {
+  //     setDoorList(data);
+  //   }
+  // }, [data]);
+
+
+  const API_URL ='http://192.168.95.27:3000';
 
   const openDoor = async () => {
     try {
@@ -42,10 +56,6 @@ const DoorAccessScreen = ({ navigation }) => {
     console.log('NFC code generated:', ndefPayload);*/
   }
 
-
-
-
-
   const styles = Styles;
   const [selectedDoor, setSelectedDoor] = useState(null);
 
@@ -55,7 +65,7 @@ const DoorAccessScreen = ({ navigation }) => {
 
   const confirmOpenDoor = () => {
     // Implement the logic to open the selected door
-    console.log(`Opening door: ${selectedDoor}`);
+    console.log('Opening door: ${selectedDoor}');
     openTheDoor();
     setSelectedDoor(null); // Reset selectedDoor after confirmation
   };
@@ -75,7 +85,7 @@ const DoorAccessScreen = ({ navigation }) => {
         keyExtractor={(item) => item.id.toString()}
       />
       <HigherBar />
-      
+      {username==="admin" &&
         <Modal
         visible={selectedDoor !== null}
         transparent={true}
@@ -95,6 +105,7 @@ const DoorAccessScreen = ({ navigation }) => {
             </View>
         </View>
         </Modal>
+    }
 
     </View>
   );

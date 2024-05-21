@@ -239,6 +239,18 @@ def insertdatabase_door(id, sock):
     db.close()
     
 
+def get_door_num():
+     
+    dbDoor = sql.connect("mock_database.db")
+    c = dbDoor.cursor()
+    c.execute("SELECT name FROM doorNum")
+
+    doorA = c.fetchall()
+
+    dbDoor.close()
+    return str(doorA)
+
+
 
 def check_nfc(nfc, door):
     
@@ -296,9 +308,6 @@ def check_nfc(nfc, door):
         return shoudl
 
 
-    
-    
-    
 
 def databasecreate_codes(db):
     db = sql.connect("mock_database.db")
@@ -360,6 +369,10 @@ def handle_client(client_sock, addr):
         
             permi = permission(client_name)
             message = "Hello, client. Thanks for connecting!"
+            client_sock.send(message.encode())
+            
+            client_sock.recv(1024).decode()
+            message = get_door_num()
             client_sock.send(message.encode())
         
         
@@ -477,7 +490,7 @@ def set_asymetric():
 
 # Create a socket object
 def main():
-    HOST = '192.168.1.187'  # Listen on all network interfaces 
+    HOST = '192.168.95.27'  # Listen on all network interfaces 
                                                                 
     PORT = 12346     # Port to listen on
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
