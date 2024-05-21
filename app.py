@@ -51,7 +51,7 @@ from URL import IP_AD
 app = Flask(__name__)
 
 # Sendgrid configuration    Tirem os espaços e descomentem na parte de baixo
-#SENDGRID_API_KEY = 'SG.2dHir0cV     RiqMQwAtxBbSSw.WHxl6ETM5    Kk_GgjovMFsoMn4BzuuHRPXoh-cjcg-0Ks'
+
 
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
@@ -424,10 +424,19 @@ def get_database_log():
 
 def insert_doorNum_ADMIN(doorNum):
 
+    decoded_data = doorNum.decode('utf-8')
+
+    print(decoded_data)
+
+    door_list = ast.literal_eval(decoded_data)
+
+    door_names = [row[0] for row in door_list]
+
     db = sql.connect("app.db")
     c = db.cursor()
-    for row in doorNum:
-        c.execute("INSERT INTO doorNumAdmin VALUES (?)",row)
+    for row in door_names:
+        print("row is" + row)
+        c.execute("INSERT INTO doorNumAdmin VALUES (?)",(row,))
     db.commit()
 
     db.close()
@@ -554,7 +563,7 @@ def run_app():
     message = "Give num doors"
     client_sock.send(message.encode())
     door_sql = client_sock.recv(1024)
-    #insert_doorNum_ADMIN(door_sql)
+    insert_doorNum_ADMIN(door_sql)
     user = "1"
     client_priv = RSA.generate(2048)
     client_pub = client_priv.publickey()
@@ -675,18 +684,18 @@ def register():
         return jsonify(response)
     
 
-    # # Password Checks
-    # password_strength = zxcvbn(password)
-    # pwned_count = is_password_pwned(password)
+    # Password Checks
+    password_strength = zxcvbn(password)
+    pwned_count = is_password_pwned(password)
 
 
-    # if pwned_count > 0:
-    #     response = {'message': 'Password has been compromised before. Use a different one'}
-    #     return jsonify(response)
+    if pwned_count > 0:
+        response = {'message': 'Password has been compromised before. Use a different one'}
+        return jsonify(response)
 
-    # if password_strength['score'] < 2:
-    #     response = {'message': 'Use a stronger password'}
-    #     return jsonify(response)
+    if password_strength['score'] < 2:
+        response = {'message': 'Use a stronger password'}
+        return jsonify(response)
     
     # Generate a random 6-digit code
     code = ''.join(random.choices(string.digits, k=6))
@@ -694,8 +703,8 @@ def register():
     # Store the code in the session temporarily
     store_code(code)
 
-    subject = 'Door App Login Verification Code'
-    body = f'Your verification code is: {code}'
+    subject = 'Door App Register Verification Code'
+    body = f'Your registration code is: {code}'
     if send_email(email, subject, body):
         response = {'message': 'Redirecting to Email Verification'}
         return jsonify(response)
@@ -743,8 +752,6 @@ def login():
     email = data.get('username')
     password = data.get('password')
 
-    print(email)
-
     # Check if the email is in the database
     if not is_email_in_database(email):
         response = {'message': 'Email and/or Password incorrect'}
@@ -752,11 +759,6 @@ def login():
     
     # Check if the passwords match
     user_password = get_password_by_email(email)
-
-    print(user_password)
-    print(type(user_password))
-    print(password)
-    print(type(password))
 
 
     if not check_password_hash(user_password[0], password):

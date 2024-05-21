@@ -50,11 +50,6 @@ const DoorAccessScreen = ({ navigation }) => {
   function openTheDoor() {
     console.log("open button pressed")
     openDoor();
-    
-    /*const ndefPayload = Ndef.encodeMessage([
-      Ndef.textRecord('Hello, NFC!'),
-    ]);
-    console.log('NFC code generated:', ndefPayload);*/
   }
 
   const styles = Styles;
@@ -86,7 +81,7 @@ const DoorAccessScreen = ({ navigation }) => {
         keyExtractor={(item) => item.id.toString()}
       />
       <HigherBar />
-      {username==="admin" &&
+      {username==="leandro.rito@ua.pt" &&
         <Modal
         visible={selectedDoor !== null}
         transparent={true}

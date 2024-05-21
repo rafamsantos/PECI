@@ -1,4 +1,4 @@
-import React, {useState}from 'react'
+import React, {useState, useEffect}from 'react'
 import { View, Text, Image, StyleSheet, useWindowDimensions, Alert} from 'react-native'
 //import AsyncStorage from '@react-native-async-storage/async-storage';
 import Logo from '../../../assets/images/ua2.png'
@@ -24,40 +24,32 @@ const SignInScreen = () => {
         navigation.navigate('RegisterScreen');
     };
 
+    useEffect(() => {
+        const signIn = async () => {
+            const response = await fetch(`${API_URL}/signin`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ username, password })
+            });
+    
+            const result = await response.json();
+            setMessage(result.message);
+    
+            if (result.message === 'Session is open') {
+                navigation.navigate('Home', {username : username});
+            }
+        };
+    
+        signIn();
+      }, []);
+
 
     const onSignInPressed = async () => {
-        console.warn('Sign In Pressed');
+        //console.warn('Sign In Pressed');
         console.log('Username before navigation:', username);
-        /*
-        try{
-            const response = await fetch('http://192.168.56.1:3000/signin', {
-            method: 'POST',
-            headers: {
-                'Content-type': 'application/json',
-            },
-            body: JSON.stringify({username,password}),
-        });
-
-        if (response.ok){
-            const data = await response.json();
-
-            await AsyncStorage.setItem('authToken', data.token);
-            await AsyncStorage.setItem('userRole',data.role);
-
-            navigation.navigate('Home', { username: username })
-
-        }
-        else {
-            setError('Invalid username or password');
-        }
-
-        }
-        catch(error){
-            console.error('Sign in error:',error);
-            setError('Try again.');
-        }*/
-        //navigation.navigate('Home', { username: username })
-        //navigation.navigate('VerifyCodeScreen')
+        
         const response = await fetch(`${API_URL}/signin`, {
             method: 'POST',
             headers: {
