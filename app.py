@@ -252,6 +252,15 @@ def delete_dataRepository(db):
 
     return None
 
+def clear_dataNumAdmin():
+    db = sql.connect("app.db")
+    c = db.cursor()
+    c.execute("""DELETE FROM doorNumAdmin""")
+    db.commit()
+    db.close()
+
+    return None
+
 def database_insertrc(db):
      
     db = sql.connect("app.db")
@@ -424,9 +433,11 @@ def get_database_log():
 
 def insert_doorNum_ADMIN(doorNum):
 
-    decoded_data = doorNum.decode('utf-8')
+    #Clear previous doors
 
-    print(decoded_data)
+    clear_dataNumAdmin()
+
+    decoded_data = doorNum.decode('utf-8')
 
     door_list = ast.literal_eval(decoded_data)
 
@@ -435,7 +446,7 @@ def insert_doorNum_ADMIN(doorNum):
     db = sql.connect("app.db")
     c = db.cursor()
     for row in door_names:
-        print("row is" + row)
+       
         c.execute("INSERT INTO doorNumAdmin VALUES (?)",(row,))
     db.commit()
 
@@ -447,9 +458,11 @@ def get_doorNum_ADMIN():
     
     dbDoor = sql.connect("app.db")
     c = dbDoor.cursor()
-    c.execute("SELECT * FROM doorNumAdmn")
+    c.execute("SELECT * FROM doorNumAdmin")
 
     doorA = c.fetchall()
+
+    print(doorA)
 
     dbDoor.close()
     return doorA
@@ -654,7 +667,9 @@ def door_called():
 
 @app.route('/doorNum', methods = ['GET'])
 def door_num_called():
-    dataDoor = get_doorNum_ADMIN
+    dataDoor = get_doorNum_ADMIN()
+    print(dataDoor)
+    print("yay")
     if dataDoor:
         return jsonify(dataDoor)
     else:

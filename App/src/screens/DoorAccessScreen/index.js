@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Modal, Button } from 'react-native';
 import HigherBar from '../../components/HigherBar';
 import Navigation from '../../navigation';
@@ -8,27 +8,31 @@ import CONFIG from '../../config_url';
 
 
 const DoorAccessScreen = ({ navigation }) => {
-  const doorList = [
-    { id: 1, name: '4.3.14' },
-    { id: 2, name: '4.2.18' },
-    { id: 3, name: 'MakerLab' },
-    { id: 4, name: '4.1.8' },
-    { id: 5, name: '4.2.27' },
-    // Add more doors as needed
-  ];
+  // const doorList = [
+  //   { id: 1, name: '4.3.14' },
+  //   { id: 2, name: '4.2.18' },
+  //   { id: 3, name: 'MakerLab' },
+  //   { id: 4, name: '4.1.8' },
+  //   { id: 5, name: '4.2.27' },
+  //   // Add more doors as needed
+  // ];
 
   const route = useRoute();
   const { params } = route;
   const username = params && params.username ? params.username : ''; 
-  const data = params.data;
+  const data = params.fetchedData;
 
-  // //const [doorList,setDoorList] = useState([])
+  const [doorList,setDoorList] = useState([])
 
-  // useEffect(() => {
-  //   if (data) {
-  //     setDoorList(data);
-  //   }
-  // }, [data]);
+  useEffect(() => {
+    if (data) {
+      const updatedDoorList = data.map((item, index) => ({ id: index + 1, name: item }));
+      console.log(updatedDoorList);
+      setDoorList(updatedDoorList);
+    }
+  }, [data]);
+
+  
 
 
   const API_URL =CONFIG.FLASK_URL;
@@ -81,7 +85,7 @@ const DoorAccessScreen = ({ navigation }) => {
         keyExtractor={(item) => item.id.toString()}
       />
       <HigherBar />
-      {username==="leandro.rito@ua.pt" &&
+      {username==="admin" &&
         <Modal
         visible={selectedDoor !== null}
         transparent={true}

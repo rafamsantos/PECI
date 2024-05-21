@@ -18,9 +18,9 @@ const Home = () => {
 
   const API_URL =CONFIG.FLASK_URL;
 
-  // useEffect(() => {
-  //   fetchDoorData();
-  // }, []);
+  useEffect(() => {
+    fetchDoorData();
+  }, []);
 
 
   const fetchData = async () => {
@@ -165,6 +165,7 @@ async function writeNdef() {
     if (buttonName === 'Logs') {
       navigation.navigate('Logs');
     } else if (buttonName === 'Acessos') {
+      console.log(data)
       navigation.navigate('DoorAccess',{username:username, fetchedData: data});
     }
   };
