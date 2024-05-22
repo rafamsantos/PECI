@@ -125,7 +125,7 @@ async function writeNdef() {
 
     console.log("STEP1 is being done");
 
-    const bytes = Ndef.encodeMessage([Ndef.textRecord('1C443B87')]);
+    const bytes = Ndef.encodeMessage([Ndef.textRecord('NFC CODE HELLO')]);
 
     console.log("STEP1 done");
 
@@ -163,6 +163,7 @@ async function writeNdef() {
 
   const buttonClickListener = (buttonName) => {
     if (buttonName === 'Logs') {
+      fetchData();
       navigation.navigate('Logs');
     } else if (buttonName === 'Acessos') {
       console.log(data)

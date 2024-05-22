@@ -85,7 +85,7 @@ const DoorAccessScreen = ({ navigation }) => {
         keyExtractor={(item) => item.id.toString()}
       />
       <HigherBar />
-      {username==="admin" &&
+      {username==="leandro.rito@ua.pt" &&
         <Modal
         visible={selectedDoor !== null}
         transparent={true}

@@ -202,6 +202,25 @@ def read_log(user):
     return stringue
 
 
+def read_log_Master():
+    
+    stringue = ""
+    print("Here3!!!")
+    db3 = sql.connect("mock_database.db")
+    c = db3.cursor()
+    a = c.execute("SELECT * FROM Logue")
+    print("Here!!!")
+    for row in a:
+            stringue = stringue+row+"\n"
+    db3.close()
+    print("Here2!!!")
+    
+    if stringue == "":
+        stringue = "None"
+    
+    return stringue
+
+
 def add_log_file(door, user):
     
     db = sql.connect("mock_database.db")
@@ -413,6 +432,11 @@ def handle_client(client_sock, addr):
                         st = {"Compromise": "You where compromise\nQuiting..."}
                         send_dict(client_sock, st)
                         client_sock.close() 
+                    elif request["command"] == "LOG_Master":
+                            to_sent = read_log_Master()
+                            #record = encryptor.update(str(to_sent).encode("utf-8")) + encryptor.finalize()
+                            client_sock.send(to_sent.encode())
+                         
                     elif request["command"] == "NFC":
                         print("here!!!")
                         data = ''.join(random.choices(string.ascii_letters + string.digits, k=15))
@@ -429,8 +453,8 @@ def handle_client(client_sock, addr):
 
 # Convert bytes to hexadecimal string
                 #hex_string = binascii.hexlify(encoded_message).decode()
-                        insertdatabase_NFC(str(data), str(request["I'm"]))
-                        #insertdatabase_NFC(client_name, str("1b233a49"))
+                        #insertdatabase_NFC(str(data), str(request["I'm"]))
+                        insertdatabase_NFC(client_name, str("1b233a49"))
                         record = encryptor.update(str(data).encode("utf-8")) + encryptor.finalize()
                         st = {"NFC code": str( base64.b64encode (record), "utf-8")}
                         send_dict(client_sock, st)

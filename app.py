@@ -403,6 +403,8 @@ def check_for_door():
 
 def insert_database_log(log):
 
+    print(log)
+    print("log printed")
     db = sql.connect("app.db")
     c = db.cursor()
     c.execute("INSERT INTO dataRepository VALUES (?, ?)", ("None", log))
@@ -554,8 +556,8 @@ def run_app():
     client_sock.send(message.encode())
     
     response = client_sock.recv(1024)
-    name = "rmlameiras@ua.pt"
-    message = "rmlameiras@ua.pt"
+    name = "leandro.rito@ua.pt"
+    message = "leandro.rito@ua.pt"
     client_sock.send(message.encode())
     response = client_sock.recv(1024) 
     if do_not_have_MAC():
@@ -565,7 +567,7 @@ def run_app():
         set_MAC(mac.decode())
         message = "Done"
         client_sock.send(message.encode())
-    
+    #494799
     else:
         mac = get_MAC()
         client_sock.send(mac.encode())
@@ -638,6 +640,17 @@ def run_app():
             insert_database_log(log)
             set_input(4)
         
+        elif(int(comand) == 5):#Logs
+            ud = SHA256.new(bytearray(name.encode()))
+            signaturaRSA = PKCS1_v1_5.new(client_priv)
+            st = {"command": "LOG_Master", "door": comand, "I'm": name, "Sig": str(base64.b64encode(signaturaRSA.sign(ud)), "utf8")}
+            send_dict(client_sock, st)
+            log = client_sock.recv(1024)
+            log = log.decode()
+            print(log)
+            insert_database_log(log)
+            set_input(4)
+        
         elif(int(comand) == 3): #addmistrator open door
             ud = SHA256.new(bytearray(name.encode()))
             signaturaRSA = PKCS1_v1_5.new(client_priv)
@@ -658,6 +671,8 @@ def index():
 @app.route('/door', methods = ['GET'])
 def door_called():
     set_input(2)
+    logData = get_database_log()
+    print(logData)
     print("Command sent")
     return jsonify("Connection Established")
     # data = {
