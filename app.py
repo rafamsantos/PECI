@@ -50,8 +50,8 @@ from URL import IP_AD
 
 app = Flask(__name__)
 
-# Sendgrid configuration    Tirem os espaços e descomentem na parte de baixo
-
+# Sendgrid configuration    Tirem os espaços e descomentem na parte de baixo 
+#SENDGRID_API_KEY = 'SG.2dHir0cVRiqMQ       wAtxBbSSw.WHxl6ETM5Kk          _GgjovMFsoMn4BzuuHR       PXoh-cjcg-0Ks'
 
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
@@ -134,6 +134,17 @@ def add_user(email, password):
 
     return True
 
+def delete_user(email):
+    conn = sql.connect('register_users.db')
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM users WHERE email = ?', (email,))
+    conn.commit()
+    conn.close()
+
+    if is_email_in_database(email):
+        return True
+    return False
+
 # Store token
 def store_token(token):
     expires_at = datetime.now() + timedelta(hours=24)
@@ -157,6 +168,15 @@ def get_token():
         if datetime.now() < datetime.fromisoformat(expires_at):
             return token
     return None
+
+# Delete token
+def delete_token():
+    print("wow")
+    conn = sql.connect('register_users.db')
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM session')  # Clear previous sessions
+    conn.commit()
+    conn.close()
 
 # Store code
 def store_code(code):
@@ -403,6 +423,7 @@ def check_for_door():
 
 def insert_database_log(log):
 
+    print("Logging passed")
     print(log)
     print("log printed")
     db = sql.connect("app.db")
@@ -423,14 +444,20 @@ def get_database_log():
     print("granting more")
     log = None
     for row in a:
-            if row[1] == "None":
+            print("printing rows")
+            print(row[1])
+            if row[0] == "None":
                 log = row[1]
-                c.execute("UPDATE dataRepository  SET LOG = ? WHERE LOG = ?", ("None", row[1]))
+            
 
                 break
-
+    for row in a:
+            c.execute("UPDATE dataRepository  SET LOG = ? WHERE NFC = ?", ("None", row[1]))
+            break
     db.commit()
     db.close()
+    print("return log")
+    print(log)
     return log
 
 def insert_doorNum_ADMIN(doorNum):
@@ -487,7 +514,7 @@ def get_doorNum_ADMIN():
 #Start flask server
 def run_Flask():
     #while not exit_event.is_set():
-    app.run(host=IP_AD,port=3000,debug=False)
+    app.run(host='192.168.60.27',port=3000,debug=False)
 
 
 
@@ -636,7 +663,9 @@ def run_app():
             send_dict(client_sock, st)
             log = client_sock.recv(1024)
             log = log.decode()
+            print("log before moving")
             print(log)
+            print("Log moving")
             insert_database_log(log)
             set_input(4)
         
@@ -671,7 +700,11 @@ def index():
 @app.route('/door', methods = ['GET'])
 def door_called():
     set_input(2)
-    logData = get_database_log()
+    i = 0
+    while i-10:
+        print("getting log")
+        logData = get_database_log()
+        i=i+1
     print(logData)
     print("Command sent")
     return jsonify("Connection Established")
@@ -840,6 +873,24 @@ def verifyCode():
         response = {'message': 'Incorrect Code'}
         return jsonify(response)
 
+@app.route('/removeUser', methods=['POST'])
+def removeUser():
+    # Get the user's email
+    print("ma man")
+    data = request.get_json()
+    email = data.get('username')
+    delete_token()
+    # if not delete_token():
+    #     print("shok")
+    #     response = {'message': 'Unsuccessful Delete'}
+    #     return jsonify(response)
+
+    if delete_user(email):
+        response = {'message': 'Successful Delete'}
+        return jsonify(response)
+    
+    response = {'message': 'Unsuccessful Delete'}
+    return jsonify(response)
     
 def main():
 

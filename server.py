@@ -191,13 +191,15 @@ def read_log(user):
     a = c.execute("SELECT * FROM Logue")
     print("Here!!!")
     for row in a:
-        if row[0] == user: 
-            stringue = stringue+row+"\n"
+        if row[1] == user: 
+            print(stringue)
+            stringue = stringue+str(row)+"\n"
+            print(stringue)
     db3.close()
     print("Here2!!!")
     
     if stringue == "":
-        stringue = "None"
+        stringue = "None1"
     
     return stringue
 
@@ -211,7 +213,7 @@ def read_log_Master():
     a = c.execute("SELECT * FROM Logue")
     print("Here!!!")
     for row in a:
-            stringue = stringue+row+"\n"
+            stringue = stringue+str(row)+"\n"
     db3.close()
     print("Here2!!!")
     

@@ -1,7 +1,7 @@
 import React, {useState}from 'react'
 import { View, Text, Image, StyleSheet, useWindowDimensions, Alert} from 'react-native'
 //import AsyncStorage from '@react-native-async-storage/async-storage';
-import Logo from '../../../assets/images/ua.png'
+import Logo from '../../../assets/images/ua2.png'
 import CustomInput from '../../components/CustomInput';
 import CustomButton from '../../components/CustomButton';
 import { useNavigation, useRoute } from '@react-navigation/native';

@@ -42,7 +42,7 @@ bequiet()
 # bequiet()
 
 # Server configuration
-SERVER_HOST = '192.168.22.27'  # IP address of the server
+SERVER_HOST = '192.168.10.27'  # IP address of the server
 SERVER_PORT = 12346                 # Port the server is listening on
 bequiet()
 

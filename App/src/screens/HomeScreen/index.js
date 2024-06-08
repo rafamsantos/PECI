@@ -125,7 +125,7 @@ async function writeNdef() {
 
     console.log("STEP1 is being done");
 
-    const bytes = Ndef.encodeMessage([Ndef.textRecord('NFC CODE HELLO')]);
+    const bytes = Ndef.encodeMessage([Ndef.textRecord('NFC TAG IS HERE!')]);
 
     console.log("STEP1 done");
 
@@ -156,6 +156,19 @@ async function writeNdef() {
     console.log('NFC code generated:', ndefPayload);*/
   }
 
+  const deleteUser = async () => {
+    const response = await fetch(`${API_URL}/removeUser`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ username }),
+    });  
+
+    const result = await response.json();
+    //setMessage(result.message);
+  }
+
   
   const userProfile = {
     email: username,
@@ -168,6 +181,11 @@ async function writeNdef() {
     } else if (buttonName === 'Acessos') {
       console.log(data)
       navigation.navigate('DoorAccess',{username:username, fetchedData: data});
+    }else if (buttonName === 'Delete') {
+      deleteUser();
+      // if (result.message === 'Successful Delete'){
+      navigation.navigate('SignIn');
+      // }
     }
   };
 
@@ -181,7 +199,7 @@ async function writeNdef() {
             </View>
             <View style={styles.buttonsContainer}>
                 <TouchableOpacity style={styles.button} onPress={() => writeNdef()}>
-                    <Text style={styles.buttonText}>Read NFC</Text>
+                    <Text style={styles.buttonText}>Write Tag</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.button} onPress={() => generateNdef()}>
                     <Text style={styles.buttonText}>Generate NFC</Text>
@@ -191,6 +209,10 @@ async function writeNdef() {
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.button} onPress={() => buttonClickListener('Acessos')}>
                     <Text style={styles.buttonText}>Portas</Text>
+                </TouchableOpacity>
+                {/* butao invisivel para elimnar conta */}
+                <TouchableOpacity style={styles.button2} onPress={() => buttonClickListener('Delete')}>
+                    <Text style={styles.buttonText}>Eliminar Conta</Text>
                 </TouchableOpacity>
             </View>
         </View>
@@ -231,11 +253,26 @@ const styles = StyleSheet.create({
       alignItems: 'center',
       margin: 5,
   },
+  button2: {
+    padding: 15,
+    backgroundColor: 'white',
+    borderRadius: 5,
+    width: 310,
+    height: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+    margin: 5,
+},
   buttonText: {
       color: 'white',
       textAlign: 'center',
       fontSize: 16,
   },
+  buttonText2: {
+    color: 'black',
+    textAlign: 'center',
+    fontSize: 16,
+},
   Logo:{
     width: 200,
     maxHeight: 80,
